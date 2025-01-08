@@ -1,13 +1,12 @@
 const express = require("express");
+const { getAllUser } = require("../controllers/admin/getAllUser");
+const { createUser } = require("../controllers/admin/createUser");
+const { createBank } = require("../controllers/admin/createBank");
 
 const adminRoute = express.Router();
 
-adminRoute.get("/", async (req, res) => {
-  try {
-    return res.status(200).send({ message: "admin Route has been called!" });
-  } catch (error) {
-    return res.status(400).send({ error: error.message });
-  }
-});
+adminRoute.get("/users", getAllUser);
+adminRoute.post("/create-user", createUser);
+adminRoute.post("/create-bank", createBank);
 
 module.exports = adminRoute;
