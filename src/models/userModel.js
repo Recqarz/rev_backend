@@ -135,13 +135,17 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    refreshToken: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );
 
 // Pre-save middleware to hash password
-userSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
     try {
       const salt = await bcrypt.genSalt(10); // Generate a salt with a 10-round cost factor
       this.password = await bcrypt.hash(this.password, salt); // Hash the password
