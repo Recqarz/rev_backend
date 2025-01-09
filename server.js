@@ -1,6 +1,9 @@
 const express = require("express");
 const connectionDB = require("./src/db");
 const adminRoute = require("./src/routes/adminRoute");
+const commonRoute = require("./src/routes/commonRoute");
+const authMiddleware = require("./src/middlewares/authMiddleware");
+const adminMiddleware = require("./src/middlewares/adminMiddleware");
 require("dotenv").config();
 
 const app = express();
@@ -16,7 +19,8 @@ const PORT = process.env.PORT || 8080;
 // });
 
 /** ROUTE CONFIG */
-app.use("/api/v1/admin", adminRoute);
+app.use("/api/v1/user", commonRoute);
+app.use("/api/v1/admin", authMiddleware, adminMiddleware, adminRoute);
 
 app.listen(PORT, async () => {
   try {
