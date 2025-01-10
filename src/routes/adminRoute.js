@@ -9,9 +9,10 @@ const { updateUser } = require("../controllers/common/updateUser");
 const adminRoute = express.Router();
 
 adminRoute.post("/create-user", createUser);
-adminRoute.patch("/user/update/:id", updateUser);
 adminRoute.post("/create-bank", createBank);
 adminRoute.get("/bank-list", getAllBank);
+adminRoute.get("/user-list", getAllUser);
+adminRoute.patch("/user/update/:id", updateUser);
 adminRoute.patch("/bank/update/:id", updateBankDetails);
 
 module.exports = adminRoute;

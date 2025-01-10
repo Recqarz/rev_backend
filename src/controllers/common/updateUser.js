@@ -14,7 +14,13 @@ const updateUser = async (req, res) => {
     const userDetails = { ...req.body };
 
     // Define fields that should not be updated under any circumstances
-    const protectedFields = ["_id", "userCode", "otpMobile", "otpEmail", "refreshToken"];
+    const protectedFields = [
+      "_id",
+      "userCode",
+      "otpMobile",
+      "otpEmail",
+      "refreshToken",
+    ];
 
     // Add additional fields to protect if the user is not an admin
     if (req.user.role !== "admin") {
@@ -50,9 +56,7 @@ const updateUser = async (req, res) => {
     });
   } catch (error) {
     // Handle any errors that occur during the update process
-    return res
-      .status(500)
-      .send({ error: "An error occurred", details: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 

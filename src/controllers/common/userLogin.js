@@ -1,5 +1,6 @@
 const UserModel = require("../../models/userModel"); // Import the UserModel
 const jwt = require("jsonwebtoken"); // Import the jsonwebtoken library
+const { compareHasedData } = require("../../utils/hasData");
 
 const userLogin = async (req, res) => {
   try {
@@ -27,7 +28,7 @@ const userLogin = async (req, res) => {
     }
 
     // Compare the provided password with the hashed password in the database
-    const isPasswordMatch = await user.comparePassword(password);
+    const isPasswordMatch = await compareHasedData(password, user.password);
 
     // If password does not match, return an error response
     if (!isPasswordMatch) {

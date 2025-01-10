@@ -12,4 +12,9 @@ async function hashData(data) {
   }
 }
 
-module.exports = { hashData };
+// Method to compare passwords
+const compareHasedData = async function (data, hasedData) {
+  return bcrypt.compare(data, hasedData);
+};
+
+module.exports = { hashData, compareHasedData };
