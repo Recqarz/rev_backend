@@ -1,42 +1,46 @@
 const mongoose = require("mongoose");
 
-const bankSchema = new mongoose.Schema({
-  bankName: {
-    type: String,
-    required: true,
-  },
-  branchName: {
-    type: String,
-    required: true,
-  },
-  IFSC: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  address: {
-    street: {
+const bankSchema = new mongoose.Schema(
+  {
+    bankName: {
       type: String,
-      default:""
+      required: true,
     },
-    pinCode: {
-      type: Number,
-      default:null
-    },
-    city: {
+    branchName: {
       type: String,
-      default:""
+      required: true,
     },
-    state: {
+    IFSC: {
       type: String,
-      default:""
+      required: true,
+      unique: true,
+      sparse: true,
     },
-    country: {
-      type: String,
-      default:"India"
+    address: {
+      street: {
+        type: String,
+        default: "",
+      },
+      pinCode: {
+        type: Number,
+        default: null,
+      },
+      city: {
+        type: String,
+        default: "",
+      },
+      state: {
+        type: String,
+        default: "",
+      },
+      country: {
+        type: String,
+        default: "India",
+      },
     },
   },
-});
+  { timestamps: true }
+);
 
 const BankModel = mongoose.model("banks", bankSchema);
 

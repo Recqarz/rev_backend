@@ -1,5 +1,17 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const { hashData } = require("../utils/hasData");
+
+const otpSchema = new mongoose.Schema({
+  expirationTime: Number,
+  emailOtp: String,
+  mobileOtp: String,
+  isVerify: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+});
 
 const BankDetailsSchema = new mongoose.Schema({
   accountNumber: {
@@ -61,16 +73,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      sparse: true,
     },
     mobile: {
-      type: Number,
+      type: String,
       unique: true,
+      sparse: true,
       required: true,
     },
     userCode: {
       type: String,
       required: true,
       unique: true,
+      sparse: true,
     },
     password: {
       type: String,
@@ -84,14 +99,17 @@ const userSchema = new mongoose.Schema(
     panNumber: {
       type: String,
       unique: true,
+      sparse: true,
     },
     aadhaarNumber: {
       type: String,
       unique: true,
+      sparse: true
     },
     voterId: {
       type: String,
       unique: true,
+      sparse: true
     },
     workForBank: {
       type: mongoose.Schema.ObjectId,
@@ -123,13 +141,8 @@ const userSchema = new mongoose.Schema(
       required: false, // Optional: Remove required if you want it optional
       default: null, // or use a valid default value
     },
-    otpMobile: {
-      type: String, // Changed to String for OTP as it's often in string format
-      default: null,
-    },
-    otpEmail: {
-      type: String, // Changed to String for OTP as it's often in string format
-      default: null,
+    otp: {
+      type: otpSchema,
     },
     isActive: {
       type: Boolean,
@@ -147,8 +160,7 @@ const userSchema = new mongoose.Schema(
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     try {
-      const salt = await bcrypt.genSalt(10); // Generate a salt with a 10-round cost factor
-      this.password = await bcrypt.hash(this.password, salt); // Hash the password
+      this.password = await hashData(this.password);
       next(); // Continue with the save operation
     } catch (err) {
       next(err); // Pass any error to the next middleware

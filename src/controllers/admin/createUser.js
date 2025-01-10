@@ -38,8 +38,9 @@ const createUser = async (req, res) => {
 
     // Auto-generate password using the last 4 digits of the mobile number
     const password = `rev@${mobile.toString().slice(-4)}`;
-    console.log("userCode ", userCode);
-    console.log("password ", password);
+
+    // console.log("userCode ", userCode);
+    // console.log("password ", password);
 
     // Create a new user with the provided and generated details
     const newUser = await UserModel.create({
