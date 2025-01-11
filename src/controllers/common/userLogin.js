@@ -1,8 +1,13 @@
 const UserModel = require("../../models/userModel"); // Import the UserModel
 const jwt = require("jsonwebtoken"); // Import the jsonwebtoken library
 const { compareHasedData } = require("../../utils/hasData");
+const {
+  sendOtptoEmail,
+  generateOTP,
+  isOTPExpired,
+} = require("../../utils/otp");
 
-const userLogin = async (req, res) => {
+const loginAndSendOtp = async (req, res) => {
   try {
     // Extract userCode and password from the request body
     const { userCode, password } = req.body;
@@ -34,6 +39,76 @@ const userLogin = async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(404).send({ error: "Oops! your password is wrong!" });
     }
+    // send otp
+    const emailOtp = generateOTP();
+    const mobileOtp = generateOTP();
+
+    const expirationTime = new Date().getTime() + 5 * 60 * 1000; // 5 minutes from now
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      user._id,
+      {
+        otp: {
+          expirationTime,
+          emailOtp,
+          mobileOtp,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(400).send({
+        error: " Oops!. Somthing went wrong while storing OTP in database!",
+      });
+    }
+
+    //send OTP to user mobile and email
+    await sendOtptoEmail(user.email, emailOtp);
+
+    return res
+      .status(200)
+      .send({ message: "OTP has been sent to your email and mobile" });
+  } catch (error) {
+    // Handle any errors and send an error response
+    return res.status(400).send({ error: error.message });
+  }
+};
+
+//******************************************* */
+const verifyOtpAndGenerateToken = async (req, res) => {
+  try {
+    const { userData, eOtp, mOtp } = req.body;
+
+    const user = await UserModel.findOne({
+      $or: [{ email: userData }, { mobile: userData }, { userCode: userData }],
+    });
+
+    if (!user) {
+      return res.status(404).send({
+        error:
+          "Oops! Something went wrong. Please provide correct email/mobile/user-code.",
+      });
+    }
+    const { expirationTime, emailOtp, mobileOtp } = user?.otp;
+
+    if (isOTPExpired(expirationTime)) {
+      return res
+        .status(400)
+        .send({ error: "Oops! your otp has expired please try again!" });
+    }
+
+    const isOtpMatched = eOtp === emailOtp && mOtp === mobileOtp;
+
+    if (!isOtpMatched) {
+      return res.status(200).send({ error: "Oops! Invalied OTP." });
+    }
+
+    await UserModel.findByIdAndUpdate(user._id, {
+      otp: {
+        isVerify: true,
+      },
+    });
 
     // Create a payload with user information for the JWT
     const payload = {
@@ -59,9 +134,8 @@ const userLogin = async (req, res) => {
       },
     });
   } catch (error) {
-    // Handle any errors and send an error response
     return res.status(400).send({ error: error.message });
   }
 };
 
-module.exports = { userLogin };
+module.exports = { loginAndSendOtp, verifyOtpAndGenerateToken };
