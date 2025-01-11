@@ -32,7 +32,7 @@ const userLogin = async (req, res) => {
 
     // If password does not match, return an error response
     if (!isPasswordMatch) {
-      return res.status(404).send({ error: "!Oops! your password is wrong!" });
+      return res.status(404).send({ error: "Oops! your password is wrong!" });
     }
 
     // Create a payload with user information for the JWT
