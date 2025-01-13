@@ -1,5 +1,9 @@
 const nodemailer = require("nodemailer");
 const UserModel = require("../models/userModel");
+const FormData = require("form-data");
+const { v4: uuidv4 } = require("uuid");
+require("dotenv").config();
+const axios = require("axios");
 
 // Generate a random 6-digit number and return it as a string
 function generateOTP() {
@@ -46,6 +50,45 @@ const sendOtptoEmail = async (email, otp) => {
   const info = await transporter.sendMail(mailOptions);
   // console.log(`Email sent successfully: ${info.response}`);
   return info.response;
+};
+
+// OTP on mobile
+
+const messageType = process.env.MESSAGE_TYPE;
+const fromNumber = process.env.FROM_NUMBER;
+const templateid = process.env.TEMPLATE_ID;
+const serviceType = process.env.SERVICE_TYPE;
+const whatsappApiKey = process.env.WHATSAPP_API_KEY;
+
+const sendWhatsappMessage = async (whatsappnumber, otp) => {
+  // console.log("first", whatsappnumber, otp);
+  const formData = new FormData();
+  formData.append("messageType", messageType);
+  formData.append("fromNumber", fromNumber);
+  formData.append("contactnumber", whatsappnumber);
+  formData.append("templateid", templateid);
+  formData.append("serviceType", serviceType);
+  formData.append("messageuuid", "fasdlf7");
+  formData.append("buttonValues", "");
+  formData.append("dynamicUrl", "");
+  formData.append("dynamicUrl2", "");
+  formData.append("message", otp);
+
+  const url = `https://automate.nexgplatforms.com/api/v1/wa/save-message`;
+
+  try {
+    // Use axios to send the POST request
+    const response = await axios.post(url, formData, {
+      headers: {
+        Authorization: `${whatsappApiKey}`,
+        ...formData.getHeaders(), // Ensure headers from FormData are sent
+      },
+    });
+
+    console.log("WhatsApp message sent successfully");
+  } catch (error) {
+    console.error(`Error sending WhatsApp message: ${error.message}`);
+  }
 };
 
 // sending OTP
@@ -144,4 +187,5 @@ module.exports = {
   sendOtptoEmail,
   sendOTP,
   verifyOTP,
+  sendWhatsappMessage,
 };

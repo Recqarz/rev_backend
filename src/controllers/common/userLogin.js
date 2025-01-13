@@ -5,6 +5,7 @@ const {
   sendOtptoEmail,
   generateOTP,
   isOTPExpired,
+  sendWhatsappMessage,
 } = require("../../utils/otp");
 
 const loginAndSendOtp = async (req, res) => {
@@ -65,6 +66,7 @@ const loginAndSendOtp = async (req, res) => {
 
     //send OTP to user mobile and email
     await sendOtptoEmail(user.email, emailOtp);
+    await sendWhatsappMessage(user.mobile,mobileOtp)
 
     return res
       .status(200)
@@ -78,10 +80,10 @@ const loginAndSendOtp = async (req, res) => {
 //******************************************* */
 const verifyOtpAndGenerateToken = async (req, res) => {
   try {
-    const { userData, eOtp, mOtp } = req.body;
+    const { userCode, eOtp, mOtp } = req.body;
 
     const user = await UserModel.findOne({
-      $or: [{ email: userData }, { mobile: userData }, { userCode: userData }],
+      $or: [{ email: userCode }, { mobile: userCode }, { userCode: userCode }],
     });
 
     if (!user) {
