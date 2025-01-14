@@ -1,10 +1,7 @@
 const express = require("express");
 const connectionDB = require("./src/db");
-const adminRoute = require("./src/routes/adminRoute");
-const commonRoute = require("./src/routes/commonRoute");
-const authMiddleware = require("./src/middlewares/authMiddleware");
-const adminMiddleware = require("./src/middlewares/adminMiddleware");
 const cors = require("cors");
+const allRoutes = require("./src/routes/allRoutes");
 require("dotenv").config();
 
 const app = express();
@@ -12,17 +9,17 @@ app.use(cors());
 app.use(express.json());
 const PORT = process.env.PORT || 8080;
 
-// app.get("/", async (req, res) => {
-//   try {
-//     return res.status(200).send({ message: "data fetched successfull" });
-//   } catch (error) {
-//     return res.status(400).send({ error: error.message });
-//   }
-// });
+/** Test Route */
+app.get("/", async (req, res) => {
+  try {
+    return res.status(200).send({ message: "data fetched successfull" });
+  } catch (error) {
+    return res.status(400).send({ error: error.message });
+  }
+});
 
-/** ROUTE CONFIG */
-app.use("/api/v1/user", commonRoute);
-app.use("/api/v1/admin", authMiddleware, adminMiddleware, adminRoute);
+/** All routes */
+app.use("/api", allRoutes);
 
 app.listen(PORT, async () => {
   try {
