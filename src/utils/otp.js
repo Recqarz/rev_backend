@@ -167,7 +167,7 @@ const verifyOTP = async (req, res) => {
     const isOtpMatched = eOtp === emailOtp && mOtp === mobileOtp;
 
     if (!isOtpMatched) {
-      return res.status(200).send({ error: "Oops! Invalied OTP." });
+      return res.status(400).send({ error: "Oops! Invalied OTP." });
     }
 
     await UserModel.findByIdAndUpdate(user._id, {
