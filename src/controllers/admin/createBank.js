@@ -10,13 +10,20 @@ const createBank = async (req, res) => {
         .send({ error: "bank-name, branch-name and IFSC is required" });
     }
 
+    const isAlreadyRegesteredBankWithIFSC = await BankModel.findOne({ IFSC });
+    if (isAlreadyRegesteredBankWithIFSC) {
+      return res
+        .status(400)
+        .send({ error: "Oops! Already Bank registred with this IFSC" });
+    }
+
     const newBank = await BankModel.create({
       bankName,
       branchName,
       IFSC,
       address,
     });
-    
+
     if (!newBank) {
       return res.status(400).send({
         error:
