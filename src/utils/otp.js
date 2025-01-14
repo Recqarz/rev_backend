@@ -131,8 +131,8 @@ const sendOTP = async (req, res) => {
     }
 
     // Send the OTP on mail and mobile
-    await sendOtptoEmail(user?.email,emailOtp);
-    await sendWhatsappMessage(user?.mobile,mobileOtp)
+    await sendOtptoEmail(user?.email, emailOtp);
+    await sendWhatsappMessage(user?.mobile, mobileOtp);
 
     return res.status(200).send({ updatedUser });
   } catch (error) {
@@ -164,10 +164,11 @@ const verifyOTP = async (req, res) => {
         .send({ error: "Oops! your otp has expired please try again!" });
     }
 
-    const isOtpMatched = eOtp === emailOtp && mOtp === mobileOtp;
-
-    if (!isOtpMatched) {
-      return res.status(400).send({ error: "Oops! Invalied OTP." });
+    if (eOtp !== emailOtp) {
+      return res.status(400).send({ error: "Oops! Invalied Email OTP." });
+    }
+    if (mOtp !== mobileOtp) {
+      return res.status(400).send({ error: "Oops! Invalied Mobile OTP." });
     }
 
     await UserModel.findByIdAndUpdate(user._id, {

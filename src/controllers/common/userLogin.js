@@ -100,10 +100,12 @@ const verifyOtpAndGenerateToken = async (req, res) => {
         .send({ error: "Oops! your otp has expired please try again!" });
     }
 
-    const isOtpMatched = eOtp === emailOtp && mOtp === mobileOtp;
 
-    if (!isOtpMatched) {
-      return res.status(400).send({ error: "Oops! Invalied OTP." });
+    if (eOtp !== emailOtp) {
+      return res.status(400).send({ error: "Oops! Invalied Email OTP." });
+    }
+    if (mOtp !== mobileOtp) {
+      return res.status(400).send({ error: "Oops! Invalied Mobile OTP." });
     }
 
     await UserModel.findByIdAndUpdate(user._id, {
