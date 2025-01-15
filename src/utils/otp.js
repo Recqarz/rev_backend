@@ -48,7 +48,7 @@ const sendOtptoEmail = async (email, otp) => {
   };
 
   const info = await transporter.sendMail(mailOptions);
-  // console.log(`Email sent successfully: ${info.response}`);
+  console.log(`Email sent successfully`);
   return info.response;
 };
 
