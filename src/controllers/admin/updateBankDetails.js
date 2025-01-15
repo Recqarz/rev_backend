@@ -8,6 +8,18 @@ const updateBankDetails = async (req, res) => {
     }
     // const { bankName, branchName, IFSC, address } = req.body;
     const data = req.body;
+
+    if (data?.IFSC) {
+      const isAlreadyRegesteredBankWithIFSC = await BankModel.findOne({
+        IFSC: data?.IFSC,
+      });
+      if (isAlreadyRegesteredBankWithIFSC) {
+        return res
+          .status(400)
+          .send({ error: "Oops! Already Bank registred with this IFSC" });
+      }
+    }
+
     const updateBank = await BankModel.findByIdAndUpdate(bankId, data, {
       new: true,
     });

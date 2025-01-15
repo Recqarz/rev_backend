@@ -72,20 +72,14 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
-      sparse: true,
     },
     mobile: {
       type: String,
-      unique: true,
-      sparse: true,
       required: true,
     },
     userCode: {
       type: String,
       required: true,
-      unique: true,
-      sparse: true,
     },
     password: {
       type: String,
@@ -98,22 +92,15 @@ const userSchema = new mongoose.Schema(
     },
     panNumber: {
       type: String,
-      unique: true,
-      sparse: true,
     },
     aadhaarNumber: {
       type: String,
-      unique: true,
-      sparse: true
     },
     voterId: {
       type: String,
-      unique: true,
-      sparse: true
     },
     workForBank: {
       type: mongoose.Schema.ObjectId,
-      required: true,
       ref: "banks",
     },
     bankDetails: {

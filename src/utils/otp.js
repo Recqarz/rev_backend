@@ -28,7 +28,7 @@ const sendOtptoEmail = async (email, otp) => {
   }
 
   const subject = "Your one time password for Secure Access";
-  const body = `Your verification code is: ${otp}. CMS_RecQARZ`;
+  const body = `Your verification code is: ${otp}. REV Shoftware \n Please don't share OTP with any one!`;
 
   const transporter = nodemailer.createTransport({
     host: "smtp.office365.com",
@@ -48,7 +48,7 @@ const sendOtptoEmail = async (email, otp) => {
   };
 
   const info = await transporter.sendMail(mailOptions);
-  // console.log(`Email sent successfully: ${info.response}`);
+  console.log(`Email sent successfully`);
   return info.response;
 };
 
@@ -131,6 +131,8 @@ const sendOTP = async (req, res) => {
     }
 
     // Send the OTP on mail and mobile
+    await sendOtptoEmail(user?.email, emailOtp);
+    await sendWhatsappMessage(user?.mobile, mobileOtp);
 
     return res.status(200).send({ updatedUser });
   } catch (error) {
@@ -162,10 +164,11 @@ const verifyOTP = async (req, res) => {
         .send({ error: "Oops! your otp has expired please try again!" });
     }
 
-    const isOtpMatched = eOtp === emailOtp && mOtp === mobileOtp;
-
-    if (!isOtpMatched) {
-      return res.status(200).send({ error: "Oops! Invalied OTP." });
+    if (eOtp !== emailOtp) {
+      return res.status(400).send({ error: "Oops! Invalied Email OTP." });
+    }
+    if (mOtp !== mobileOtp) {
+      return res.status(400).send({ error: "Oops! Invalied Mobile OTP." });
     }
 
     await UserModel.findByIdAndUpdate(user._id, {

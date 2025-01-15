@@ -13,6 +13,21 @@ const createUser = async (req, res) => {
         .send({ error: "Oops! Please fill all required fields!" });
     }
 
+    const user = await UserModel.findOne({
+      $or: [{ email }, { mobile }],
+    });
+
+    if (user?.email == email) {
+      return res
+        .status(400)
+        .send({ error: "Oops! This emails is already registered" });
+    }
+    if (user?.mobile == mobile) {
+      return res
+        .status(400)
+        .send({ error: "Oops! This Mobile number is already registered" });
+    }
+
     // Get the first 3 characters from the role and convert to uppercase
     const first3CharFromRole = role.toString().slice(0, 3).toUpperCase();
 
