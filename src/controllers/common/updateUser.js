@@ -25,7 +25,7 @@ const updateUser = async (req, res) => {
 
     // Add additional fields to protect if the user is not an admin
     if (req.user.role !== "admin") {
-      protectedFields.push("workForBank", "modules", "isActive", "password");
+      protectedFields.push("workForBank", "modules", "isActive", "password","role");
     }
 
     // Remove protected fields from the userDetails object to prevent updating them
