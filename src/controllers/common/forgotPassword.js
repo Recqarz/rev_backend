@@ -1,6 +1,6 @@
 const UserModel = require("../../models/userModel");
-const { checkPasswordRegex } = require("../../utils/checkPasswordRegex");
 const { hashData } = require("../../utils/hasData");
+const { checkPasswordRegex } = require("../../utils/regex");
 
 const resetPassword = async (req, res) => {
   try {

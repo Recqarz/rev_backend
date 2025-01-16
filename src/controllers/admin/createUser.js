@@ -1,5 +1,5 @@
 const UserModel = require("../../models/userModel");
-const { checkPasswordRegex } = require("../../utils/checkPasswordRegex");
+const { checkPasswordRegex } = require("../../utils/regex");
 const { checkMobileRegex } = require("../../utils/regex");
 
 const createUser = async (req, res) => {

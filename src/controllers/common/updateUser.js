@@ -1,7 +1,7 @@
 const UserModel = require("../../models/userModel");
-const { checkPasswordRegex } = require("../../utils/checkPasswordRegex");
+
 const { hashData } = require("../../utils/hasData");
-const { checkMobileRegex } = require("../../utils/regex");
+const { checkMobileRegex, checkPasswordRegex } = require("../../utils/regex");
 
 // Controller to update user details
 const updateUser = async (req, res) => {
