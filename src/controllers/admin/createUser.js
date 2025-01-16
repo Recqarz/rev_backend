@@ -1,5 +1,6 @@
 const UserModel = require("../../models/userModel");
 const { checkPasswordRegex } = require("../../utils/checkPasswordRegex");
+const { checkMobileRegex } = require("../../utils/regex");
 
 const createUser = async (req, res) => {
   try {
@@ -12,6 +13,12 @@ const createUser = async (req, res) => {
       return res
         .status(404)
         .send({ error: "Oops! Please fill all required fields!" });
+    }
+
+    if (!checkMobileRegex(mobile)) {
+      return res
+        .status(400)
+        .send({ error: "Please enter a valid mobile number" });
     }
 
     const user = await UserModel.findOne({

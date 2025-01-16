@@ -1,6 +1,7 @@
 const UserModel = require("../../models/userModel");
 const { checkPasswordRegex } = require("../../utils/checkPasswordRegex");
 const { hashData } = require("../../utils/hasData");
+const { checkMobileRegex } = require("../../utils/regex");
 
 // Controller to update user details
 const updateUser = async (req, res) => {
@@ -25,7 +26,13 @@ const updateUser = async (req, res) => {
 
     // Add additional fields to protect if the user is not an admin
     if (req.user.role !== "admin") {
-      protectedFields.push("workForBank", "modules", "isActive", "password","role");
+      protectedFields.push(
+        "workForBank",
+        "modules",
+        "isActive",
+        "password",
+        "role"
+      );
     }
 
     // Remove protected fields from the userDetails object to prevent updating them
@@ -48,6 +55,12 @@ const updateUser = async (req, res) => {
       } else {
         delete userDetails.password; // Do not update if the password is the same
       }
+    }
+
+    if (!checkMobileRegex(userDetails.mobile)) {
+      return res
+        .status(400)
+        .send({ error: "Please enter a valid mobile number" });
     }
 
     // Update the user document in the database with the remaining fields
