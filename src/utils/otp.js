@@ -134,7 +134,7 @@ const sendOTP = async (req, res) => {
     await sendOtptoEmail(user?.email, emailOtp);
     await sendWhatsappMessage(user?.mobile, mobileOtp);
 
-    return res.status(200).send({ updatedUser });
+    return res.status(200).send({ message:"OTP has been sent to your email and whatsapp" });
   } catch (error) {
     console.error("Error:", error.message);
     return res.status(400).send({ error: error.message });
