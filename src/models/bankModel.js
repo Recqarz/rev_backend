@@ -13,8 +13,6 @@ const bankSchema = new mongoose.Schema(
     IFSC: {
       type: String,
       required: true,
-      unique: true,
-      sparse: true,
     },
     address: {
       street: {

@@ -1,4 +1,5 @@
 const UserModel = require("../../models/userModel");
+const { checkPasswordRegex } = require("../../utils/checkPasswordRegex");
 const { hashData } = require("../../utils/hasData");
 
 // Controller to update user details
@@ -34,6 +35,15 @@ const updateUser = async (req, res) => {
     if (req.user.role === "admin" && userDetails.password) {
       const user = await UserModel.findById(userId);
       if (user.password !== userDetails.password) {
+        // check password regex for uper, lower, number, special char and min langth 8
+        if (!checkPasswordRegex(userDetails.password)) {
+          return res.status(400).send({
+            error:
+              "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character, and be at least 8 characters long",
+          });
+        }
+
+        // Hash the new password before updating the user document
         userDetails.password = await hashData(userDetails.password);
       } else {
         delete userDetails.password; // Do not update if the password is the same

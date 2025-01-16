@@ -68,7 +68,6 @@ const caseSchema = new mongoose.Schema(
   {
     caseCode: {
       type: String,
-      unique: true,
       required: true,
     },
     bankId: {
