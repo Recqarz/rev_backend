@@ -57,10 +57,12 @@ const updateUser = async (req, res) => {
       }
     }
 
-    if (!checkMobileRegex(userDetails.mobile)) {
-      return res
-        .status(400)
-        .send({ error: "Please enter a valid mobile number" });
+    if (userDetails.mobile) {
+      if (!checkMobileRegex(userDetails?.mobile)) {
+        return res
+          .status(400)
+          .send({ error: "Please enter a valid mobile number" });
+      }
     }
 
     // Update the user document in the database with the remaining fields
