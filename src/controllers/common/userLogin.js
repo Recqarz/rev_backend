@@ -74,7 +74,7 @@ const loginAndSendOtp = async (req, res) => {
 
     //send OTP to user mobile and email
     await sendOtptoEmail(user.email, emailOtp);
-    await sendWhatsappMessage(user.mobile,mobileOtp)
+    await sendWhatsappMessage(user.mobile, mobileOtp);
 
     return res
       .status(200)
@@ -107,7 +107,6 @@ const verifyOtpAndGenerateToken = async (req, res) => {
         .status(400)
         .send({ error: "Oops! your otp has expired please try again!" });
     }
-
 
     if (eOtp !== emailOtp) {
       return res.status(400).send({ error: "Oops! Invalied Email OTP." });
@@ -144,6 +143,7 @@ const verifyOtpAndGenerateToken = async (req, res) => {
         lastName: user.lastName,
         role: user.role,
         accessToken,
+        isActive: user.isActive,
       },
     });
   } catch (error) {
