@@ -2,7 +2,7 @@ const UserModel = require("../../models/userModel");
 
 const getAllUser = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = "", role,isActive } = req.query;
+    const { page = 1, limit = 10, search = "", role, isActive } = req.query;
 
     // Building the filter query
     const filter = {};
@@ -27,6 +27,8 @@ const getAllUser = async (req, res) => {
             { lastName: { $regex: search, $options: "i" } },
             { userCode: { $regex: search, $options: "i" } },
             { role: { $regex: search, $options: "i" } },
+            { mobile: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
           ],
         }
       : {};

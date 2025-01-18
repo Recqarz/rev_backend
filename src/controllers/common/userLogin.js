@@ -40,6 +40,14 @@ const loginAndSendOtp = async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(404).send({ error: "Oops! your password is wrong!" });
     }
+
+    // If user is not active, return an error response
+    if (!user.isActive) {
+      return res.status(404).send({
+        error: "Oops! your account is deactivated. Please contact the admin!",
+      });
+    }
+
     // send otp
     const emailOtp = generateOTP();
     const mobileOtp = generateOTP();
@@ -120,6 +128,7 @@ const verifyOtpAndGenerateToken = async (req, res) => {
       email: user.email, // User email for additional context
       userCode: user.userCode, // User code for identification
       role: user.role, // User role for authorization
+      isActive: user.isActive, // User status for additional context
       iat: Math.floor(Date.now() / 1000), // Issued at timestamp (current time in seconds)
       expiresIn: "1d", // Token expiration period
     };
