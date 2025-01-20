@@ -5,14 +5,15 @@ const { createBank } = require("../controllers/admin/createBank");
 const { getAllBank } = require("../controllers/admin/getAllBank");
 const { updateBankDetails } = require("../controllers/admin/updateBankDetails");
 const { updateUser } = require("../controllers/common/updateUser");
+const adminMiddleware = require("../middlewares/adminMiddleware");
 
 const adminRoute = express.Router();
 
-adminRoute.post("/create-user", createUser);
-adminRoute.post("/create-bank", createBank);
 adminRoute.get("/bank-list", getAllBank);
-adminRoute.get("/user-list", getAllUser);
-adminRoute.patch("/user/update/:id", updateUser);
-adminRoute.patch("/bank/update/:id", updateBankDetails);
+adminRoute.post("/create-user", adminMiddleware, createUser);
+adminRoute.post("/create-bank", adminMiddleware, createBank);
+adminRoute.get("/user-list", adminMiddleware, getAllUser);
+adminRoute.patch("/user/update/:id", adminMiddleware, updateUser);
+adminRoute.patch("/bank/update/:id", adminMiddleware, updateBankDetails);
 
 module.exports = adminRoute;
