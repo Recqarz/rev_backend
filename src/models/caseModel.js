@@ -122,6 +122,7 @@ const caseSchema = new mongoose.Schema(
     },
     fieldExecutiveId: {
       type: mongoose.Schema.ObjectId,
+      required: true,
       ref: "users",
       default: null,
     },

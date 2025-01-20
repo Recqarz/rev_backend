@@ -3,11 +3,13 @@ const commonRoute = require("./commonRoute");
 const authMiddleware = require("../middlewares/authMiddleware");
 const adminRoute = require("./adminRoute");
 const coordinatorRoute = require("./coordinatiorRoute");
+const fieldExecutiveRoute = require("./field-executiveRoute");
 
 const allRoutes = express.Router();
 
 allRoutes.use("/v1/user", commonRoute);
 allRoutes.use("/v1/coordinator", authMiddleware, coordinatorRoute);
+allRoutes.use("/v1/field-executive", authMiddleware, fieldExecutiveRoute);
 allRoutes.use("/v1/admin", authMiddleware, adminRoute);
 
 module.exports = allRoutes;
