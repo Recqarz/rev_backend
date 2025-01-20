@@ -49,6 +49,10 @@ const addCase = async (req, res) => {
     };
 
     const newCase = await CaseModel.create(data);
+    if (!newCase) {
+      return res.status(400).send({ error: "Oops. Case not created!" });
+    }
+    await newCase.save();
     return res.status(200).send({ message: "Case created successfully" });
   } catch (error) {
     console.error(error);
