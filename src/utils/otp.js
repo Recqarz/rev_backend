@@ -52,7 +52,7 @@ const sendOtptoEmail = async (email, otp) => {
   return info.response;
 };
 
-// OTP on mobile
+// OTP on WhatsApp
 
 const messageType = process.env.MESSAGE_TYPE;
 const fromNumber = process.env.FROM_NUMBER;
@@ -88,6 +88,32 @@ const sendWhatsappMessage = async (whatsappnumber, otp) => {
     console.log("WhatsApp message sent successfully");
   } catch (error) {
     console.error(`Error sending WhatsApp message: ${error.message}`);
+  }
+};
+
+// OTP on sms
+
+const sendSmsToRecipient = async (to, text) => {
+  const apiUrl = `https://api2.nexgplatforms.com/sms/1/text/query`;
+
+  const params = new URLSearchParams({
+    username: process.env.NEXG_SMS_API_USERNAME,
+    password: process.env.NEXG_SMS_API_PASSWORD,
+    from: process.env.NEXG_SMS_API_FROM,
+    to: `+91${to}`,
+    text: `Your OTP for REV Platform is ${text}. It is valid for 5 minutes. Please do not share it with anyone. Team REV (RECQARZ)`,
+    indiaDltContentTemplateId: process.env.NEXG_INDIAN_DLT_CONTENT_TEMPLATE_ID,
+    indiaDltTelemarketerId: process.env.NEXG_TELEMARKETER_ID,
+    indiaDltPrincipalEntityId:
+      process.env.NEXG_SMS_API_INDIA_DLT_PRINCIPAL_ENTITY_ID,
+  }).toString();
+
+  try {
+    await axios.get(`${apiUrl}?${params}`);
+    console.log("SMS sent successfully");
+  } catch (error) {
+    console.error("Error sending SMS:", error.message);
+    // Errors are silently handled here
   }
 };
 
@@ -133,8 +159,11 @@ const sendOTP = async (req, res) => {
     // Send the OTP on mail and mobile
     await sendOtptoEmail(user?.email, emailOtp);
     await sendWhatsappMessage(user?.mobile, mobileOtp);
+    await sendSmsToRecipient(user?.mobile, mobileOtp);
 
-    return res.status(200).send({ message:"OTP has been sent to your email and whatsapp" });
+    return res
+      .status(200)
+      .send({ message: "OTP has been sent to your email and mobile" });
   } catch (error) {
     console.error("Error:", error.message);
     return res.status(400).send({ error: error.message });
@@ -191,4 +220,5 @@ module.exports = {
   sendOTP,
   verifyOTP,
   sendWhatsappMessage,
+  sendSmsToRecipient,
 };

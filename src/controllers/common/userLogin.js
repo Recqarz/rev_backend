@@ -6,6 +6,7 @@ const {
   generateOTP,
   isOTPExpired,
   sendWhatsappMessage,
+  sendSmsToRecipient,
 } = require("../../utils/otp");
 
 const loginAndSendOtp = async (req, res) => {
@@ -75,6 +76,7 @@ const loginAndSendOtp = async (req, res) => {
     //send OTP to user mobile and email
     await sendOtptoEmail(user.email, emailOtp);
     await sendWhatsappMessage(user.mobile, mobileOtp);
+    await sendSmsToRecipient(user.mobile, mobileOtp);
 
     return res
       .status(200)
