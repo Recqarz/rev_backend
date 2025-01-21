@@ -6,11 +6,13 @@ const {
 const coordinatorMiddleware = require("../middlewares/coordinatorMiddleware");
 const { caseList } = require("../controllers/coordinatior/caseList");
 const { updateCase } = require("../controllers/coordinatior/updateCase");
+const { getCaseById } = require("../controllers/coordinatior/getCaseById");
 
 const coordinatorRoute = express.Router();
 
 coordinatorRoute.post("/add-case", coordinatorMiddleware, addCase);
 coordinatorRoute.patch("/update-case/:id", coordinatorMiddleware, updateCase);
+coordinatorRoute.get("/case/:id", coordinatorMiddleware, getCaseById);
 coordinatorRoute.get("/case-list", caseList);
 
 coordinatorRoute.get(
