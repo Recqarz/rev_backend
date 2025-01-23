@@ -44,8 +44,6 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    console.log(user?.isActive);
-
     if (!user?.isActive) {
       return res.status(404).send({
         error: "Oops! your account is deactivated. Please contact the admin!",
