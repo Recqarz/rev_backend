@@ -25,7 +25,10 @@ const updateCase = async (req, res) => {
     }
     return res
       .status(200)
-      .send({ message: "Case has been updated successfully!" });
+      .send({
+        message: "Case has been updated successfully!",
+        data: updatedCase,
+      });
   } catch (error) {
     return res.status(400).send({ error: error.message });
   }
