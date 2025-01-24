@@ -1,5 +1,9 @@
 const multer = require("multer");
 
+
+
+//** Multer Disk Storage */
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./src/public/temp");
@@ -12,5 +16,14 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+// //** Multer Memory Storage */
+// const storage = multer.memoryStorage();
+// const upload = multer({ storage });
+
+// module.exports = upload;
+
+//***************** */
+
 
 module.exports = { upload };

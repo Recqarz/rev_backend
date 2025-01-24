@@ -5,12 +5,14 @@ const {
 const {
   createFieldExecutiveForm,
 } = require("../controllers/field-executive/createFieldExecutiveForm");
+const { upload } = require("../middlewares/multer.middleware");
 
 const fieldExecutiveRoute = express.Router();
 
 fieldExecutiveRoute.get("/cases", getFieldExecutiveAssignCase);
 fieldExecutiveRoute.post(
   "/cases/:id/property-details",
+  upload.array("images"),
   createFieldExecutiveForm
 );
 
