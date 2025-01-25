@@ -22,8 +22,8 @@ const roadPropertySubjectSchema = mongoose.Schema({
 const detailsSchema = mongoose.Schema({
   floorName: { type: String, required: true, trim: true },
   accommodation: { type: String, required: true, trim: true },
-  builtupArea: { type: Number, required: true },
-  projectionArea: { type: Number, required: true },
+  builtupArea: { type: String, required: true },
+  projectionArea: { type: String, required: true },
 });
 
 // Main Schema: Property Details

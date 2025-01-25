@@ -1,7 +1,5 @@
 const multer = require("multer");
 
-
-
 //** Multer Disk Storage */
 
 const storage = multer.diskStorage({
@@ -15,15 +13,26 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+// ** File Filter Function for Validation **
+const fileFilter = (req, file, cb) => {
+  // console.log("====file===>", file);
+  const allowedTypes = ["image/png", "image/jpeg", "image/svg+xml"];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true); // Accept file
+  } else {
+    cb(
+      new Error("Invalid file type. Only PNG, JPG, and SVG are allowed."),
+      false
+    ); // Reject file
+  }
+};
 
-// //** Multer Memory Storage */
-// const storage = multer.memoryStorage();
-// const upload = multer({ storage });
-
-// module.exports = upload;
-
-//***************** */
-
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 5 MB file size limit
+  },
+});
 
 module.exports = { upload };

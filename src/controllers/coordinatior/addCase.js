@@ -77,7 +77,9 @@ const addCase = async (req, res) => {
       return res.status(400).send({ error: "Oops. Case not created!" });
     }
     await newCase.save();
-    return res.status(200).send({ message: "Case created successfully" });
+    return res
+      .status(200)
+      .send({ message: "Case created successfully", data: newCase });
   } catch (error) {
     console.error(error);
     return res.status(500).send({ error: error?.message });

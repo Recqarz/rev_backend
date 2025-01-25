@@ -30,17 +30,10 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // geoLocation: {
-  //   type: {
-  //     type: String,
-  //     enum: ["Point"],
-  //     required: true,
-  //   },
-  //   coordinates: {
-  //     type: [Number],
-  //     required: true,
-  //   },
-  // },
+  geolocation: {
+    type: { type: String, enum: ["Point"], default: "Point" },
+    coordinates: { type: [Number], required: true },
+  },
 });
 /**  Ensure a 2dsphere index is created for geospatial queries */
 // addressSchema.index({ geoLocation: "2dsphere" });
