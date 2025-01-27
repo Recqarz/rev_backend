@@ -25,7 +25,7 @@ const getFieldExecutiveAssignCase = async (req, res) => {
     // Combining filter and search queries
     const query = { fieldExecutiveId: req.user._id, ...filter, ...searchQuery };
 
-    const allAssignCases = await CaseModel.find(query);
+    const allAssignCases = await CaseModel.find(query).sort({ createdAt: -1 });
 
     return res
       .status(200)
