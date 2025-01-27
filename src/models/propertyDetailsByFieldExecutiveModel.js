@@ -2,20 +2,34 @@ const mongoose = require("mongoose");
 
 // Sub-schema: Property Address
 const propertyAddressSchema = mongoose.Schema({
+  plotNo: { type: String, required: true, trim: true },
   street: { type: String, required: true, trim: true },
+  landmark: { type: String, required: true, trim: true },
   pinCode: { type: Number, required: true, min: 100000, max: 999999 },
-  zone: { type: String, required: true, trim: true },
+  zone: {
+    type: String,
+    required: true,
+    enum: ["east", "west", "south", "north"],
+  },
   city: { type: String, required: true, trim: true },
   state: { type: String, required: true, trim: true },
-  country: { type: String, default: "India", trim: true },
+  country: { type: String, default: "india", trim: true },
 });
 
 // Sub-schema: Road Property Subject
 const roadPropertySubjectSchema = mongoose.Schema({
   roadWidth: { type: String, required: true },
   roadWideningProposal: { type: Boolean, default: false },
-  primaryRoadType: { type: String, required: true, trim: true },
-  secondaryRoadType: { type: String, required: true, trim: true },
+  primaryRoadType: {
+    type: String,
+    required: true,
+    enum: ["mainRoad", "innerRoad"],
+  },
+  secondaryRoadType: {
+    type: String,
+    required: true,
+    enum: ["pakkaRoad", "kachaRoad"],
+  },
 });
 
 // Sub-schema: Details
@@ -29,7 +43,8 @@ const detailsSchema = mongoose.Schema({
 // Main Schema: Property Details
 const propertyDetailsSchema = new mongoose.Schema(
   {
-    caseId: { type: String, required: true, trim: true },
+    caseId: { type: mongoose.Schema.ObjectId, required: true, ref: "cases" },
+    caseCode: { type: String, required: true, trim: true },
     bankName: { type: String, required: true, trim: true },
     applicantName: { type: String, required: true, trim: true },
     mobileNo: {
@@ -171,7 +186,7 @@ const propertyDetailsSchema = new mongoose.Schema(
       type: {
         useOfGroundFloor: {
           type: String,
-          enum: ["Stilt", "unit", "partStilt", "partUnit"],
+          enum: ["stilt", "unit", "partStilt", "partUnit"],
           required: true,
         },
         heightOfStiltFloor: { type: Number, required: true },
@@ -182,7 +197,6 @@ const propertyDetailsSchema = new mongoose.Schema(
     details: { type: [detailsSchema], required: true },
     valueOfProperty: { type: Number, required: true },
     remarks: { type: String, required: true, trim: true },
-    geoTagPhotos: { type: [String] },
     images: { type: [String], default: [] },
   },
   { timestamps: true }
