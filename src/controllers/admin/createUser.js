@@ -79,7 +79,7 @@ const createUser = async (req, res) => {
     await newUser.save();
 
     // Return a success message along with the created user details
-    return res.status(200).send({ message: "User has been created!" });
+    return res.status(200).send({ message: "User has been created!", newUser });
   } catch (error) {
     // Handle any errors and return a proper error response
     return res.status(400).send({ error: error.message });
