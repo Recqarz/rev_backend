@@ -1,31 +1,18 @@
 const PropertyDetailsModel = require("../../models/propertyDetailsByFieldExecutiveModel");
 const { uploadFileToS3 } = require("../../utils/aws");
 const fs = require("fs");
-const createFieldExecutiveForm = async (req, res) => {
+const updateFieldExecutiveForm = async (req, res) => {
   try {
-    const caseId = req.params.id;
+    const { id } = req.params;
     const data = req.body;
-    const { file, files } = req;
+    const { files } = req;
 
-    if (!caseId) {
-      return res.status(400).send({
-        error: "Please Provide case-id",
-      });
+    if (!id) {
+      return res.status(400).send({ error: "Please provide form-id" });
     }
 
-    const isAlreadyAvailabeFormData = await PropertyDetailsModel.findOne({
-      caseId,
-    });
-    if (isAlreadyAvailabeFormData) {
-      return res.status.send({
-        error: "Already you have filled the form data!",
-      });
-    }
+    const consolidatedData = {};
 
-    // Initialize a single consolidated object for all parsed data
-    const consolidatedData = { caseId };
-
-    // Parse each field and consolidate the parsed data
     for (const key of Object.keys(data)) {
       const value = data[key];
 
@@ -46,6 +33,8 @@ const createFieldExecutiveForm = async (req, res) => {
       }
     }
 
+    // If File is available then upload the file
+
     if (files.length > 0) {
       const uploadPromises = files.map(async (ele) => {
         try {
@@ -63,20 +52,29 @@ const createFieldExecutiveForm = async (req, res) => {
         const s3URLs = await Promise.all(uploadPromises);
         consolidatedData.images = s3URLs; // Add all URLs to the images array
       } catch (error) {
-        return res.status(400).send({ error: "File upload failed." });
+        return res
+          .status(400)
+          .send({ error: `File upload failed. ${error.message}` });
       }
     }
 
-    // Save the consolidated data to the database
-    const newData = await PropertyDetailsModel.create(consolidatedData);
-    await newData.save();
-
-    return res.status(200).send({ message: "success", data: newData });
-  } catch (error) {
-    return res.status(400).send({
-      error: error.message,
+    // Update the form in the database
+    const updatedForm = await PropertyDetailsModel.findByIdAndUpdate(
+      id,
+      consolidatedData,
+      { new: true }
+    );
+    // Send consolidated data as a response
+    return res.status(200).send({
+      message: "Updated successfully!",
+      updatedForm,
     });
+  } catch (error) {
+    // Catch unexpected errors
+    return res
+      .status(500)
+      .send({ error: "Internal server error: " + error.message });
   }
 };
 
-module.exports = { createFieldExecutiveForm };
+module.exports = { updateFieldExecutiveForm };
