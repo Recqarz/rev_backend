@@ -50,7 +50,7 @@ const updateFieldExecutiveForm = async (req, res) => {
 
       try {
         const s3URLs = await Promise.all(uploadPromises);
-        consolidatedData.images = s3URLs; // Add all URLs to the images array
+        consolidatedData.images = [...consolidatedData.images, ...s3URLs]; // Add all URLs to the images array
       } catch (error) {
         return res
           .status(400)
