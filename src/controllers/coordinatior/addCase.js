@@ -12,6 +12,7 @@ const addCase = async (req, res) => {
       zone,
       contactNo,
       visitDate,
+      clientGeolocation,
     } = req.body;
 
     if (
@@ -22,11 +23,17 @@ const addCase = async (req, res) => {
       !clientAddress ||
       !zone ||
       !contactNo ||
-      !visitDate
+      !visitDate ||
+      !clientGeolocation
     ) {
       return res
         .status(400)
         .send({ error: "Oops! Please fill all required fields!" });
+    }
+
+    const { longitude, latitude } = clientGeolocation;
+    if (!longitude || !latitude) {
+      return res.status(400).send({ error: "Invalid geolocation data." });
     }
 
     // Case code creation
@@ -70,6 +77,10 @@ const addCase = async (req, res) => {
       caseCode,
       coordinatorId: req.user._id,
       fieldExecutiveId,
+      clientGeolocation: {
+        type: "Point",
+        coordinates: [longitude, latitude],
+      },
     };
 
     const newCase = await CaseModel.create(data);
