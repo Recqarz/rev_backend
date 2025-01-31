@@ -1,5 +1,7 @@
 const UserModel = require("../../models/userModel");
+
 const { hashData } = require("../../utils/hasData");
+const { checkMobileRegex, checkPasswordRegex } = require("../../utils/regex");
 
 // Controller to update user details
 const updateUser = async (req, res) => {
@@ -24,7 +26,13 @@ const updateUser = async (req, res) => {
 
     // Add additional fields to protect if the user is not an admin
     if (req.user.role !== "admin") {
-      protectedFields.push("workForBank", "modules", "isActive", "password");
+      protectedFields.push(
+        "workForBank",
+        "modules",
+        "isActive",
+        "password",
+        "role"
+      );
     }
 
     // Remove protected fields from the userDetails object to prevent updating them
@@ -34,9 +42,26 @@ const updateUser = async (req, res) => {
     if (req.user.role === "admin" && userDetails.password) {
       const user = await UserModel.findById(userId);
       if (user.password !== userDetails.password) {
+        // check password regex for uper, lower, number, special char and min langth 8
+        if (!checkPasswordRegex(userDetails.password)) {
+          return res.status(400).send({
+            error:
+              "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character, and be at least 8 characters long",
+          });
+        }
+
+        // Hash the new password before updating the user document
         userDetails.password = await hashData(userDetails.password);
       } else {
         delete userDetails.password; // Do not update if the password is the same
+      }
+    }
+
+    if (userDetails.mobile) {
+      if (!checkMobileRegex(userDetails?.mobile)) {
+        return res
+          .status(400)
+          .send({ error: "Please enter a valid mobile number" });
       }
     }
 

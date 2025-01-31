@@ -20,7 +20,7 @@ const addressSchema = new mongoose.Schema({
   pincode: {
     type: String,
     required: true,
-    minlength: 6,
+    match: [/^\d{6}$/, "Pincode must be exactly 6 digits"],
   },
   city: {
     type: String,
@@ -30,20 +30,7 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // geoLocation: {
-  //   type: {
-  //     type: String,
-  //     enum: ["Point"],
-  //     required: true,
-  //   },
-  //   coordinates: {
-  //     type: [Number],
-  //     required: true,
-  //   },
-  // },
 });
-/**  Ensure a 2dsphere index is created for geospatial queries */
-// addressSchema.index({ geoLocation: "2dsphere" });
 
 const dailyQuerySchema = new mongoose.Schema(
   {
@@ -68,7 +55,6 @@ const caseSchema = new mongoose.Schema(
   {
     caseCode: {
       type: String,
-      unique: true,
       required: true,
     },
     bankId: {
@@ -91,6 +77,19 @@ const caseSchema = new mongoose.Schema(
     clientAddress: {
       type: addressSchema,
       required: true,
+    },
+    clientGeolocation: {
+      type: { type: String, enum: ["Point"], default: "Point" },
+      coordinates: {
+        type: [Number],
+        required: true,
+        validate: {
+          validator: function (coords) {
+            return coords.length === 2;
+          },
+          message: "Coordinates must be an array of [longitude, latitude]",
+        },
+      },
     },
     zone: {
       type: String,
@@ -123,8 +122,8 @@ const caseSchema = new mongoose.Schema(
     },
     fieldExecutiveId: {
       type: mongoose.Schema.ObjectId,
+      required: true,
       ref: "users",
-      default: null,
     },
     supervisorId: {
       type: mongoose.Schema.ObjectId,
@@ -149,6 +148,9 @@ const caseSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+/** Ensure a 2dsphere index is created for geospatial queries */
+caseSchema.index({ clientGeolocation: "2dsphere" });
 
 const CaseModel = mongoose.model("cases", caseSchema);
 

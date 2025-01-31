@@ -1,4 +1,6 @@
 const UserModel = require("../../models/userModel");
+const { checkPasswordRegex } = require("../../utils/regex");
+const { checkMobileRegex } = require("../../utils/regex");
 
 const createUser = async (req, res) => {
   try {
@@ -11,6 +13,12 @@ const createUser = async (req, res) => {
       return res
         .status(404)
         .send({ error: "Oops! Please fill all required fields!" });
+    }
+
+    if (!checkMobileRegex(mobile)) {
+      return res
+        .status(400)
+        .send({ error: "Please enter a valid mobile number" });
     }
 
     const user = await UserModel.findOne({
@@ -29,30 +37,28 @@ const createUser = async (req, res) => {
     }
 
     // Get the first 3 characters from the role and convert to uppercase
-    const first3CharFromRole = role.toString().slice(0, 3).toUpperCase();
+    const first2CharFromRole = role.toString().slice(0, 2).toUpperCase();
 
-    let userCode;
-    let isUnique = false;
-
-    // Loop to ensure userCode is unique
-    while (!isUnique) {
-      // Generate 4 random digits
-      const randomDigits = Math.floor(1000 + Math.random() * 9000).toString();
-
-      // Combine role characters and random digits to form userCode
-      userCode = `${first3CharFromRole}${randomDigits}`;
-
-      // Check if the generated userCode already exists in the database
-      const existingUser = await UserModel.findOne({ userCode });
-
-      if (!existingUser) {
-        // If no user with the generated userCode exists, it's unique
-        isUnique = true;
-      }
-    }
+    // Case code creation
+    const allUser = await UserModel.find();
+    const newUserNumber = allUser.length
+      ? Number(allUser[allUser.length - 1].userCode.split("_")[1]) + 1
+      : 1;
+    const userCode = `${first2CharFromRole}_${String(newUserNumber).padStart(
+      4,
+      "0"
+    )}`;
 
     // Auto-generate password using the last 4 digits of the mobile number
-    const password = `rev@${mobile.toString().slice(-4)}`;
+    const password = `Rev@${mobile.toString().slice(-4)}`;
+
+    // check password regex for uper, lower, number, special char and min langth 8
+    if (!checkPasswordRegex(password)) {
+      return res.status(400).send({
+        error:
+          "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character, and be at least 8 characters long",
+      });
+    }
 
     // console.log("userCode ", userCode);
     // console.log("password ", password);
@@ -73,7 +79,7 @@ const createUser = async (req, res) => {
     await newUser.save();
 
     // Return a success message along with the created user details
-    return res.status(200).send({ message: "User has been created!" });
+    return res.status(200).send({ message: "User has been created!", newUser });
   } catch (error) {
     // Handle any errors and return a proper error response
     return res.status(400).send({ error: error.message });

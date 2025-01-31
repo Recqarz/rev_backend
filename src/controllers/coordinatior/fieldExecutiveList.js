@@ -1,23 +1,8 @@
 const UserModel = require("../../models/userModel");
 
-const getAllUser = async (req, res) => {
+const fieldExecutiveList = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = "", role, isActive } = req.query;
-
-    // Building the filter query
-    const filter = {};
-    if (role) {
-      filter.role = role;
-    }
-
-    if (isActive !== undefined) {
-      // Only apply the isActive filter if it is explicitly specified
-      if (isActive === "true") {
-        filter.isActive = true;
-      } else if (isActive === "false") {
-        filter.isActive = false;
-      }
-    }
+    const { page = 1, limit = 10, search = "" } = req.query;
 
     // Building the search query
     const searchQuery = search
@@ -26,7 +11,6 @@ const getAllUser = async (req, res) => {
             { firstName: { $regex: search, $options: "i" } },
             { lastName: { $regex: search, $options: "i" } },
             { userCode: { $regex: search, $options: "i" } },
-            { role: { $regex: search, $options: "i" } },
             { mobile: { $regex: search, $options: "i" } },
             { email: { $regex: search, $options: "i" } },
           ],
@@ -34,10 +18,11 @@ const getAllUser = async (req, res) => {
       : {};
 
     // Combining filter and search queries
-    const query = { ...filter, ...searchQuery };
+    const query = { role: "fieldExecutive", ...searchQuery };
 
     // Fetching users with pagination, filtering, and search
     const allUsers = await UserModel.find(query)
+      .populate("workForBank")
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
@@ -45,7 +30,7 @@ const getAllUser = async (req, res) => {
     const count = await UserModel.countDocuments(query);
 
     return res.status(200).send({
-      message: "All users have been fetched!",
+      message: "All fieldExecutive have been fetched!",
       totalUser: count,
       currentPage: parseInt(page, 10),
       totalPages: Math.ceil(count / limit),
@@ -56,4 +41,4 @@ const getAllUser = async (req, res) => {
   }
 };
 
-module.exports = { getAllUser };
+module.exports = { fieldExecutiveList };

@@ -6,6 +6,7 @@ const {
   generateOTP,
   isOTPExpired,
   sendWhatsappMessage,
+  sendSmsToRecipient,
 } = require("../../utils/otp");
 
 const loginAndSendOtp = async (req, res) => {
@@ -40,6 +41,14 @@ const loginAndSendOtp = async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(404).send({ error: "Oops! your password is wrong!" });
     }
+
+    // If user is not active, return an error response
+    if (!user.isActive) {
+      return res.status(404).send({
+        error: "Oops! your account is deactivated. Please contact the admin!",
+      });
+    }
+
     // send otp
     const emailOtp = generateOTP();
     const mobileOtp = generateOTP();
@@ -66,7 +75,8 @@ const loginAndSendOtp = async (req, res) => {
 
     //send OTP to user mobile and email
     await sendOtptoEmail(user.email, emailOtp);
-    await sendWhatsappMessage(user.mobile,mobileOtp)
+    await sendWhatsappMessage(user.mobile, mobileOtp);
+    await sendSmsToRecipient(user.mobile, mobileOtp);
 
     return res
       .status(200)
@@ -100,7 +110,6 @@ const verifyOtpAndGenerateToken = async (req, res) => {
         .send({ error: "Oops! your otp has expired please try again!" });
     }
 
-
     if (eOtp !== emailOtp) {
       return res.status(400).send({ error: "Oops! Invalied Email OTP." });
     }
@@ -120,6 +129,7 @@ const verifyOtpAndGenerateToken = async (req, res) => {
       email: user.email, // User email for additional context
       userCode: user.userCode, // User code for identification
       role: user.role, // User role for authorization
+      isActive: user.isActive, // User status for additional context
       iat: Math.floor(Date.now() / 1000), // Issued at timestamp (current time in seconds)
       expiresIn: "1d", // Token expiration period
     };
@@ -135,6 +145,7 @@ const verifyOtpAndGenerateToken = async (req, res) => {
         lastName: user.lastName,
         role: user.role,
         accessToken,
+        isActive: user.isActive,
       },
     });
   } catch (error) {

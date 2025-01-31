@@ -1,6 +1,6 @@
 const UserModel = require("../../models/userModel");
 const { hashData } = require("../../utils/hasData");
-const { generateOTP, isOTPExpired } = require("../../utils/otp");
+const { checkPasswordRegex } = require("../../utils/regex");
 
 const resetPassword = async (req, res) => {
   try {
@@ -27,6 +27,14 @@ const resetPassword = async (req, res) => {
       return res
         .status(400)
         .send({ error: "Oops! please verify with your OTP first!" });
+    }
+
+    // check password regex for uper, lower, number, special char and min langth 8
+    if (!checkPasswordRegex(password)) {
+      return res.status(400).send({
+        error:
+          "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character, and be at least 8 characters long",
+      });
     }
 
     const hasPassword = await hashData(password);

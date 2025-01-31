@@ -20,7 +20,7 @@ const authMiddleware = async (req, res, next) => {
 
     // If no token is provided, return an unauthorized error
     if (!accessToken) {
-      return res.status(401).json({ message: "Oops! Please login" });
+      return res.status(401).send({ message: "Oops! Please login" });
     }
 
     // Decode the JWT token using the secret key
@@ -28,7 +28,7 @@ const authMiddleware = async (req, res, next) => {
 
     // If decoding fails or the token is invalid, return an unauthorized error
     if (!decoded) {
-      return res.status(401).json({
+      return res.status(401).send({
         error:
           "Oops! Invalid access token, please login with your credentials!",
       });
@@ -39,8 +39,14 @@ const authMiddleware = async (req, res, next) => {
 
     // If no user is found or the user doesn't exist, return an error
     if (!user) {
-      return res.status(404).json({
+      return res.status(404).send({
         error: "Oops! Invalid access token or user not found",
+      });
+    }
+
+    if (!user?.isActive) {
+      return res.status(404).send({
+        error: "Oops! your account is deactivated. Please contact the admin!",
       });
     }
 
@@ -60,13 +66,13 @@ const authMiddleware = async (req, res, next) => {
     ) {
       return res
         .status(401)
-        .json({ message: "Invalid or expired access token" });
+        .send({ message: "Invalid or expired access token" });
     }
 
     // General error handling for other unexpected errors
     return res
       .status(500)
-      .json({ message: "An error occurred during authentication" });
+      .send({ message: "An error occurred during authentication" });
   }
 };
 

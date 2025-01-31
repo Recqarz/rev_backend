@@ -45,6 +45,10 @@ const addressSchema = new mongoose.Schema({
     type: Number,
     default: null,
   },
+  zone: {
+    type: String,
+    default: "",
+  },
   city: {
     type: String,
     default: "",
