@@ -91,6 +91,10 @@ const caseSchema = new mongoose.Schema(
         },
       },
     },
+    clientGeoFrmattedAddresses: {
+      type: String,
+      required: true,
+    },
     zone: {
       type: String,
       required: true,
