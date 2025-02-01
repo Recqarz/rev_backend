@@ -13,7 +13,7 @@ const addCase = async (req, res) => {
       contactNo,
       visitDate,
       clientGeolocation,
-      clientGeoFrmattedAddresses,
+      clientGeoFormattedAddress,
     } = req.body;
 
     if (
@@ -26,7 +26,7 @@ const addCase = async (req, res) => {
         !contactNo ||
         !visitDate ||
         !clientGeolocation,
-      !clientGeoFrmattedAddresses)
+      !clientGeoFormattedAddress)
     ) {
       return res
         .status(400)
@@ -83,7 +83,7 @@ const addCase = async (req, res) => {
         type: "Point",
         coordinates: [longitude, latitude],
       },
-      clientGeoFrmattedAddresses,
+      clientGeoFormattedAddress,
     };
 
     const newCase = await CaseModel.create(data);
