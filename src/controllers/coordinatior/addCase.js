@@ -13,18 +13,20 @@ const addCase = async (req, res) => {
       contactNo,
       visitDate,
       clientGeolocation,
+      clientGeoFrmattedAddresses,
     } = req.body;
 
     if (
-      !bankId ||
-      !bankRefNo ||
-      !clientName ||
-      !BOV_ReportNo ||
-      !clientAddress ||
-      !zone ||
-      !contactNo ||
-      !visitDate ||
-      !clientGeolocation
+      (!bankId ||
+        !bankRefNo ||
+        !clientName ||
+        !BOV_ReportNo ||
+        !clientAddress ||
+        !zone ||
+        !contactNo ||
+        !visitDate ||
+        !clientGeolocation,
+      !clientGeoFrmattedAddresses)
     ) {
       return res
         .status(400)
@@ -81,6 +83,7 @@ const addCase = async (req, res) => {
         type: "Point",
         coordinates: [longitude, latitude],
       },
+      clientGeoFrmattedAddresses,
     };
 
     const newCase = await CaseModel.create(data);
