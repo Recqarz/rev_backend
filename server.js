@@ -10,7 +10,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 4001;
 
 /** Test Route */
-app.get("/", async (req, res) => {
+app.get("/api/health", async (req, res) => {
   try {
     return res.status(200).send({ message: "data fetched successfull" });
   } catch (error) {
