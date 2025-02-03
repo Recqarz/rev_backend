@@ -15,9 +15,21 @@ const updateCase = async (req, res) => {
       return res.status(404).send({ error: "Please provide case id!" });
     }
 
-    const updatedCase = await CaseModel.findByIdAndUpdate(caseId, caseDetails, {
-      new: true,
-    });
+    const { longitude, latitude } = caseDetails?.clientGeolocation;
+
+    const updatedCase = await CaseModel.findByIdAndUpdate(
+      caseId,
+      {
+        ...caseDetails,
+        clientGeolocation: {
+          type: "Point",
+          coordinates: [longitude, latitude],
+        },
+      },
+      {
+        new: true,
+      }
+    );
     if (!updatedCase) {
       return res
         .status(404)
