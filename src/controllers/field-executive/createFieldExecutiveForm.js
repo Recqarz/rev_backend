@@ -17,7 +17,10 @@ const createFieldExecutiveForm = async (req, res) => {
       caseId,
     });
     if (isAlreadyAvailabeFormData) {
-      return res.status.send({
+      files.map((ele) => {
+        fs.unlinkSync(ele.path); // Remove file after upload
+      });
+      return res.status(400).send({
         error: "Already you have filled the form data!",
       });
     }

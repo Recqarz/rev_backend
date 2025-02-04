@@ -127,10 +127,20 @@ const userSchema = new mongoose.Schema(
       type: addressSchema,
       default: null,
     },
-    Geolocation: {
+    userGeolocation: {
+      type: { type: String, enum: ["Point"], default: "Point" },
+      coordinates: {
+        type: [Number],
+        validate: {
+          validator: function (coords) {
+            return coords.length === 2;
+          },
+          message: "userGeolocation must be an array of [longitude, latitude]",
+        },
+      },
+    },
+    userGeoFormattedAddress: {
       type: String,
-      required: false, // Optional: Remove required if you want it optional
-      default: null, // or use a valid default value
     },
     otp: {
       type: otpSchema,
