@@ -25,13 +25,10 @@ const updateProfilePicture = async (req, res) => {
 
     // console.log(s3URL.Location);
 
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      userId,
-      {
-        avatar: s3URL?.Location,
-      },
-      { new: true }
-    ).select("-password");
+    const updatedUser = await UserModel.findByIdAndUpdate(userId, {
+      avatar: s3URL?.Location,
+    }).select("-password");
+
     if (!updatedUser) {
       return res.status(404).send({
         error: "Oops! Somthing went wrong while updating user profile picture!",
@@ -39,7 +36,7 @@ const updateProfilePicture = async (req, res) => {
     }
     return res.status(200).send({
       message: "User profile picture has been updated successfully!",
-      updatedUser,
+      avatar: s3URL?.Location,
     });
   } catch (error) {
     return res.status(404).send({ error: error?.message });
