@@ -4,8 +4,16 @@ const { checkMobileRegex } = require("../../utils/regex");
 
 const createUser = async (req, res) => {
   try {
-    const { firstName, lastName, email, mobile, role, workForBank, address } =
-      req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      mobile,
+      role,
+      geoLocation,
+      workForBank,
+      address,
+    } = req.body;
 
     // Ensure all required fields are provided
 
@@ -13,6 +21,23 @@ const createUser = async (req, res) => {
       return res
         .status(404)
         .send({ error: "Oops! Please fill all required fields!" });
+    }
+
+    const userGeoLocation = {
+      longitude: null,
+      latitude: null,
+      formattedAddress: null,
+    };
+
+    if (role === "fieldExecutive") {
+      const { longitude, latitude, formattedAddress } = geoLocation;
+      if ((!longitude || !latitude, !formattedAddress)) {
+        return res.status(400).send({ error: "Oops! Geolocation is required" });
+      }
+
+      userGeoLocation.longitude = longitude;
+      userGeoLocation.latitude = latitude;
+      userGeoLocation.formattedAddress = formattedAddress;
     }
 
     if (!checkMobileRegex(mobile)) {
@@ -73,6 +98,11 @@ const createUser = async (req, res) => {
       workForBank,
       userCode,
       password,
+      userGeolocation: {
+        type: "Point",
+        coordinates: [userGeoLocation?.longitude, userGeoLocation?.latitude],
+      },
+      userGeoFormattedAddress: userGeoLocation?.formattedAddress,
     });
 
     // Save the new user to the database
