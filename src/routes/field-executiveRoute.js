@@ -27,7 +27,7 @@ fieldExecutiveRoute.post(
   "/cases/:id/property-details/create",
   upload.fields([
     { name: "images", maxCount: 10 }, // Adjust maxCount as needed
-    { name: "fieldExecutiveSpotImage", maxCount: 1 }
+    { name: "fieldExecutiveSpotImage", maxCount: 1 },
   ]),
   createFieldExecutiveForm
 );
@@ -35,7 +35,10 @@ fieldExecutiveRoute.post(
 // update field-executive form-data
 fieldExecutiveRoute.patch(
   "/cases/:id/property-details/update",
-  upload.array("images"),
+  upload.fields([
+    { name: "images", maxCount: 10 }, // Adjust maxCount as needed
+    { name: "fieldExecutiveSpotImage", maxCount: 1 },
+  ]),
   updateFieldExecutiveForm
 );
 

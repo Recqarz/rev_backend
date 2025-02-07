@@ -28,7 +28,7 @@ const sendOtptoEmail = async (email, otp) => {
   }
 
   const subject = "Your one time password for Secure Access";
-  const body = `Your verification code is: ${otp}. REV Shoftware \n Please don't share OTP with any one!`;
+  const body = `Your verification code is: ${otp} ( REV Software ) \n Please don't share OTP with any one!`;
 
   const transporter = nodemailer.createTransport({
     host: "smtp.office365.com",
