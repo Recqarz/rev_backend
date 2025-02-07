@@ -5,7 +5,9 @@ const createFieldExecutiveForm = async (req, res) => {
   try {
     const caseId = req.params.id;
     const data = req.body;
-    const { file, files } = req;
+    const { files } = req;
+
+    // console.log("files==", files);
 
     if (!caseId) {
       return res.status(400).send({
@@ -17,7 +19,8 @@ const createFieldExecutiveForm = async (req, res) => {
       caseId,
     });
     if (isAlreadyAvailabeFormData) {
-      files.map((ele) => {
+      fs.unlinkSync(files?.fieldExecutiveSpotImage[0].path);
+      files?.images?.map((ele) => {
         fs.unlinkSync(ele.path); // Remove file after upload
       });
       return res.status(400).send({
@@ -49,8 +52,23 @@ const createFieldExecutiveForm = async (req, res) => {
       }
     }
 
-    if (files.length > 0) {
-      const uploadPromises = files.map(async (ele) => {
+    // uploading field-executive-spot-image;
+    const s3BucketURL = await uploadFileToS3(
+      files?.fieldExecutiveSpotImage[0].path,
+      files?.fieldExecutiveSpotImage[0].originalname
+    );
+    fs.unlinkSync(files?.fieldExecutiveSpotImage[0].path); // Use async unlink
+
+    if (!s3BucketURL) {
+      return res.status(404).send({
+        error:
+          "Something went wrong uploading Field-executive-spot-image on AWS S3",
+      });
+    }
+    consolidatedData.fieldExecutiveSpotImage = s3BucketURL.Location; // Add the URL to the fieldExecutiveSpotImage field
+
+    if (files?.images.length > 0) {
+      const uploadPromises = files?.images.map(async (ele) => {
         try {
           const s3URL = await uploadFileToS3(ele.path, ele.originalname);
 

@@ -198,6 +198,7 @@ const propertyDetailsSchema = new mongoose.Schema(
     valueOfProperty: { type: Number, required: true },
     remarks: { type: String, required: true, trim: true },
     images: { type: [String], default: [] },
+    fieldExecutiveSpotImage: { type: String, required: true },
   },
   { timestamps: true }
 );
@@ -208,94 +209,3 @@ const PropertyDetailsModel = mongoose.model(
 );
 
 module.exports = PropertyDetailsModel;
-
-/** JSON formate */
-/**
-{
-  "caseId": "CASE12345",
-  "bankName": "State Bank of India",
-  "applicantName": "John Doe",
-  "mobileNo": "9876543210",
-  "dateOfVisit": "2025-01-22T00:00:00Z",
-  "geolocation": {
-    "type": "Point",
-    "coordinates": [77.5946, 12.9716]
-  },
-  "personMetAtSite": "Jane Doe",
-  "personMetAtSiteMobileNo": "9123456789",
-  "electricityMeterNo": "EM123456",
-  "propertyAddress": {
-    "street": "123 Main Street",
-    "pinCode": 560001,
-    "zone": "East Zone",
-    "city": "Bangalore",
-    "state": "Karnataka",
-    "country": "India"
-  },
-  "sewerageConnection": true,
-  "roadPropertySubject": {
-    "roadWidth": "12 meters",
-    "roadWideningProposal": false,
-    "primaryRoadType": "Concrete",
-    "secondaryRoadType": "Asphalt"
-  },
-  "buildingCracks": false,
-  "identificationOfProperty": "self",
-  "locationOfProperty": "parkFacing",
-  "typesOfLocality": "residential",
-  "typesOfArea": "authorized",
-  "neighbourhood": "middleClassArea",
-  "typesOfProperty": "builderFlat",
-  "currentUseOfProperty": "residential",
-  "occupancyStatus": "selfOccupied",
-  "relationWithLoanApplicant": "Owner",
-  "detailsOfRentedProperty": {
-    "nameOfTenant": "Alice Smith",
-    "mobileNo": "9876543211",
-    "yearsOfTenancy": 2,
-    "monthlyRent": 15000
-  },
-  "stageOfConstruction": "completed",
-  "yearOfConstruction": 2018,
-  "demarcationOfPlot": true,
-  "areaOfPlot": {
-    "length": 30,
-    "width": 40
-  },
-  "structureOfBuilding": {
-    "numberOfFloors": 5,
-    "numberOfBasements": 1,
-    "heightOfCompleteBuilding": 15,
-    "roofRights": true
-  },
-  "dwellingUnits": {
-    "numberOfUnitsAtStiltFloor": 2,
-    "numberOfUnitsPerFloor": 4,
-    "totalUnits": 20
-  },
-  "groundFloorDetails": {
-    "useOfGroundFloor": "Stilt",
-    "heightOfStiltFloor": 3.5,
-    "areaOfParking": 100
-  },
-  "details": [
-    {
-      "floorName": "Ground Floor",
-      "accommodation": "2BHK",
-      "builtupArea": 1200,
-      "projectionArea": 200
-    },
-    {
-      "floorName": "First Floor",
-      "accommodation": "3BHK",
-      "builtupArea": 1500,
-      "projectionArea": 250
-    }
-  ],
-  "valueOfProperty": 5000000,
-  "remarks": "Well-maintained property with good road connectivity.",
-  "geoTagPhotos": ["photo1.jpg", "photo2.jpg"],
-  "images": ["image1.jpg", "image2.jpg"]
-}
-
- ****/
