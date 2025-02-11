@@ -27,7 +27,7 @@ const getAllDistricts = async (req, res) => {
       return res.status(404).json({ error: "No district found!" });
     }
     return res
-      .status(400)
+      .status(200)
       .json({ message: "District fetched successfully!", data: districts });
   } catch (error) {
     return res.status(400).json({ error: error.message });
