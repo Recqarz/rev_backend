@@ -27,9 +27,6 @@
 //   try {
 //     const { districtId } = req.params;
 //     const cities = await City.find({ district: districtId });
-//     if (!cities.length) {
-//       return res.status(404).json({ error: "No citie found!" });
-//     }
 //     res.status(200).json({ cities });
 //   } catch (err) {
 //     res.status(400).json({ error: err.message });

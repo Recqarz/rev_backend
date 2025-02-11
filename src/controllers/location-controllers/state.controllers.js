@@ -29,9 +29,6 @@ const addState = async (req, res) => {
 const getAllStates = async (req, res) => {
   try {
     const states = await State.find();
-    if (!states.length) {
-      return res.status(404).json({ error: "No states found!" });
-    }
     return res
       .status(200)
       .send({ message: "states fetched successfully!", data: states });
