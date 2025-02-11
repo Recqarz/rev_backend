@@ -23,9 +23,6 @@ const getAllDistricts = async (req, res) => {
   try {
     const { stateId } = req.params;
     const districts = await District.find({ state: stateId });
-    if (!districts.length) {
-      return res.status(404).json({ error: "No district found!" });
-    }
     return res
       .status(200)
       .json({ message: "District fetched successfully!", data: districts });

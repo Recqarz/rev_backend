@@ -52,12 +52,6 @@ const getAllZones = async (req, res) => {
       "name district createdAt updatedAt"
     );
 
-    if (!zones.length) {
-      return res
-        .status(404)
-        .json({ error: "No zones found for this district" });
-    }
-
     return res
       .status(200)
       .json({ message: "Zones fetched successfully", data: zones });
