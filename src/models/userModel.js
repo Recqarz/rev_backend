@@ -37,29 +37,29 @@ const BankDetailsSchema = new mongoose.Schema({
 });
 
 const addressSchema = new mongoose.Schema({
-  street: {
+  country: {
     type: String,
-    default: "",
+    default: "India",
+  },
+  state: {
+    type: mongoose.Schema.ObjectId,
+    ref: "State",
+  },
+  district: {
+    type: mongoose.Schema.ObjectId,
+    ref: "District",
   },
   pinCode: {
     type: Number,
     default: null,
   },
+  street: {
+    type: String,
+    default: "",
+  },
   zone: {
-    type: String,
-    default: "",
-  },
-  city: {
-    type: String,
-    default: "",
-  },
-  state: {
-    type: String,
-    default: "",
-  },
-  country: {
-    type: String,
-    default: "India",
+    type: mongoose.Schema.ObjectId,
+    ref: "Zone",
   },
 });
 
