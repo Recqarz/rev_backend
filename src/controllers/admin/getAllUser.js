@@ -38,6 +38,7 @@ const getAllUser = async (req, res) => {
 
     // Fetching users with pagination, filtering, and search
     const allUsers = await UserModel.find(query)
+      .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
