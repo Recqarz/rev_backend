@@ -48,9 +48,18 @@ const getAllZones = async (req, res) => {
     }
 
     // Fetch zones for the specified district
-    const zones = await Zone.find({ district: districtId }).select(
-      "name district createdAt updatedAt"
-    );
+    const zones = await Zone.find({ district: districtId })
+      .select("name district createdAt updatedAt")
+      .populate({
+        path: "district",
+        select: "name state", // Select district name and state reference
+        populate: {
+          path: "state", // Populate state inside district
+          select: "name", // Select state name
+        },
+      });
+
+    console.log(zones);
 
     return res
       .status(200)
