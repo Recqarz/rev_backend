@@ -30,6 +30,9 @@ const createUser = async (req, res) => {
     };
 
     if (role === "fieldExecutive") {
+      if (!address) {
+        return res.status(400).send({ error: "Oops! address is required" });
+      }
       const { longitude, latitude, formattedAddress } = geoLocation;
       if ((!longitude || !latitude, !formattedAddress)) {
         return res.status(400).send({ error: "Oops! Geolocation is required" });
@@ -98,6 +101,7 @@ const createUser = async (req, res) => {
       workForBank,
       userCode,
       password,
+      address,
       userGeolocation: {
         type: "Point",
         coordinates: [userGeoLocation?.longitude, userGeoLocation?.latitude],
