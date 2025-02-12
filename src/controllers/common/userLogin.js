@@ -130,12 +130,18 @@ const verifyOtpAndGenerateToken = async (req, res) => {
       userCode: user.userCode, // User code for identification
       role: user.role, // User role for authorization
       isActive: user.isActive, // User status for additional context
-      iat: Math.floor(Date.now() / 1000), // Issued at timestamp (current time in seconds)
-      expiresIn: "1d", // Token expiration period
     };
 
     // Sign a JWT with the payload and secret key from environment variables
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET);
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    // Decode the token to extract the payload and check the expiration
+    const decodedToken = jwt.decode(accessToken);
+
+    // If the token has an `exp` field, calculate the expiration timestamp
+    const tokenExpiry = decodedToken?.exp * 1000; // Expiration time in milliseconds
 
     // Send a success response with the generated access token
     return res.status(200).send({
@@ -145,6 +151,7 @@ const verifyOtpAndGenerateToken = async (req, res) => {
         lastName: user.lastName,
         role: user.role,
         accessToken,
+        tokenExpiry,
         isActive: user.isActive,
       },
     });
