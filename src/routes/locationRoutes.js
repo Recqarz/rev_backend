@@ -17,9 +17,14 @@ const {
   addZone,
   getAllZones,
 } = require("../controllers/location-controllers/zone.controllers");
+const {
+  getAllStateDistrict,
+} = require("../controllers/location-controllers/allStateDestrict.controllers");
 
 const locationRoute = express.Router();
 
+// get All state and district
+locationRoute.get("/all", getAllStateDistrict);
 // Add State
 locationRoute.post("/state", addState);
 locationRoute.get("/state-list", getAllStates);
