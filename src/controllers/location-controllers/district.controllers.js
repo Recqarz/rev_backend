@@ -22,7 +22,10 @@ const addDistrict = async (req, res) => {
 const getAllDistricts = async (req, res) => {
   try {
     const { stateId } = req.params;
-    const districts = await District.find({ state: stateId });
+    const districts = await District.find({ state: stateId }).populate({
+      path: "state",
+      select: "name",
+    });
     return res
       .status(200)
       .json({ message: "District fetched successfully!", data: districts });
