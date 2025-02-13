@@ -156,6 +156,8 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+userSchema.index({ userGeoLocation: "2dsphere" });
+
 
 // Pre-save middleware to hash password
 userSchema.pre("save", async function (next) {
