@@ -24,8 +24,8 @@ const createUser = async (req, res) => {
     }
 
     const userGeoLocation = {
-      longitude: null,
-      latitude: null,
+      longitude: 0,
+      latitude: 0,
       formattedAddress: null,
     };
 
