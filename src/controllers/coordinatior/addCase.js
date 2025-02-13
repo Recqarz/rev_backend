@@ -9,31 +9,39 @@ const addCase = async (req, res) => {
       clientName,
       BOV_ReportNo,
       clientAddress,
-      zone,
       contactNo,
       visitDate,
       clientGeolocation,
       clientGeoFormattedAddress,
+      stateId,
+      districtId,
+      zoneId,
+      fieldExecutiveId,
     } = req.body;
 
+    // Fix required field validation
     if (
-      (!bankId ||
-        !bankRefNo ||
-        !clientName ||
-        !BOV_ReportNo ||
-        !clientAddress ||
-        !zone ||
-        !contactNo ||
-        !visitDate ||
-        !clientGeolocation,
-      !clientGeoFormattedAddress)
+      !bankId ||
+      !bankRefNo ||
+      !clientName ||
+      !BOV_ReportNo ||
+      !stateId ||
+      !districtId ||
+      !zoneId ||
+      !clientAddress ||
+      !contactNo ||
+      !visitDate ||
+      !clientGeolocation ||
+      !clientGeoFormattedAddress
     ) {
       return res
         .status(400)
         .send({ error: "Oops! Please fill all required fields!" });
     }
 
-    const { longitude, latitude } = clientGeolocation;
+    // Fix geolocation validation
+    const longitude = clientGeolocation?.longitude;
+    const latitude = clientGeolocation?.latitude;
     if (!longitude || !latitude) {
       return res.status(400).send({ error: "Invalid geolocation data." });
     }
@@ -45,40 +53,39 @@ const addCase = async (req, res) => {
       : 1;
     const caseCode = `CS_${String(newCaseNumber).padStart(4, "0")}`;
 
-    // auto assign fieldexecutive based on location
-
-    const allFieldExecutives = await UserModel.find({ role: "fieldExecutive" });
-    const fieldExecutive = allFieldExecutives.find(
-      (executive) => executive?.address?.zone === zone
-    );
-    let fieldExecutiveId;
-    if (fieldExecutive) {
-      fieldExecutiveId = fieldExecutive._id;
-    } else {
-      // Check if the array is not empty to avoid errors
-      if (allFieldExecutives.length > 0) {
-        // Generate a random index between 0 and the length of the array - 1
-        const randomIndex = Math.floor(
-          Math.random() * allFieldExecutives.length
-        );
-
-        // Get the _id of the randomly selected field executive
-        fieldExecutiveId = allFieldExecutives[randomIndex]._id;
-      }
+    // Auto-assign field executive based on location
+    let fieldexecutive = null;
+    if (!fieldExecutiveId) {
+      fieldexecutive = await UserModel.findOne({
+        role: "fieldExecutive",
+        userGeolocation: {
+          $near: {
+            $geometry: {
+              type: "Point",
+              coordinates: [longitude, latitude],
+            },
+          },
+        },
+      });
+      ("");
     }
+    // console.log("***********fieldexecutive=====", fieldexecutive);
 
+    // Prepare case data
     const data = {
       bankId,
       bankRefNo,
       clientName,
       BOV_ReportNo,
+      state: stateId,
+      district: districtId,
+      zone: zoneId,
       clientAddress,
-      zone,
       contactNo,
       visitDate,
       caseCode,
       coordinatorId: req.user._id,
-      fieldExecutiveId,
+      fieldExecutiveId: fieldExecutiveId || fieldexecutive?._id || null, // Ensure it doesn't crash
       clientGeolocation: {
         type: "Point",
         coordinates: [longitude, latitude],
@@ -86,10 +93,12 @@ const addCase = async (req, res) => {
       clientGeoFormattedAddress,
     };
 
+    // Create and save case
     const newCase = await CaseModel.create(data);
     if (!newCase) {
       return res.status(400).send({ error: "Oops. Case not created!" });
     }
+
     await newCase.save();
     return res
       .status(200)

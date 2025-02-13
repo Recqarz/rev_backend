@@ -21,15 +21,7 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: true,
     match: [/^\d{6}$/, "Pincode must be exactly 6 digits"],
-  },
-  city: {
-    type: String,
-    required: true,
-  },
-  state: {
-    type: String,
-    required: true,
-  },
+  }
 });
 
 const dailyQuerySchema = new mongoose.Schema(
@@ -74,6 +66,21 @@ const caseSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    state: {
+      type: mongoose.Schema.ObjectId,
+      ref: "State",
+      required: true,
+    },
+    district: {
+      type: mongoose.Schema.ObjectId,
+      ref: "District",
+      required: true,
+    },
+    zone: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Zone",
+      required: true,
+    },
     clientAddress: {
       type: addressSchema,
       required: true,
@@ -94,11 +101,6 @@ const caseSchema = new mongoose.Schema(
     clientGeoFormattedAddress: {
       type: String,
       required: true,
-    },
-    zone: {
-      type: String,
-      required: true,
-      enum: ["north", "south", "east", "west"], // Example zones
     },
     contactNo: {
       type: String,
