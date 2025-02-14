@@ -3,22 +3,27 @@ const UserModel = require("../../models/userModel");
 
 const caseList = async (req, res) => {
   try {
-    const { page = 1, limit = 10, status, zone, search = "" } = req.query;
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      state,
+      district,
+      zone,
+      search = "",
+    } = req.query;
 
     const filter = {};
-    if (status) {
-      filter.status = status;
-    }
-    if (zone) {
-      filter.zone = zone;
-    }
+    if (status) filter.status = status;
+    if (state) filter.state = state;
+    if (district) filter.district = district;
+    if (zone) filter.zone = zone;
 
     // Building the search query
     const searchQuery = search
       ? {
           $or: [
             { caseCode: { $regex: search, $options: "i" } },
-            { zone: { $regex: search, $options: "i" } },
             { bankRefNo: { $regex: search, $options: "i" } },
             { clientName: { $regex: search, $options: "i" } },
             { BOV_ReportNo: { $regex: search, $options: "i" } },
