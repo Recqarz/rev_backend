@@ -36,14 +36,25 @@ const caseList = async (req, res) => {
 
     // Fetching users with pagination, filtering, and search
     const allCases = await CaseModel.find(query)
-      .populate({
-        path: "bankId",
-        select: "bankName branchName", // Example: Select specific fields from the populated document
-      })
-      .populate({
-        path: "fieldExecutiveId",
-        select: "firstName lastName email mobile userCode ", // Example: Select specific fields from the populated document
-      })
+      .populate([
+        { path: "bankId", select: "bankName branchName" },
+        {
+          path: "fieldExecutiveId",
+          select: "firstName lastName email mobile userCode",
+        },
+        {
+          path: "state",
+          select: "name",
+        },
+        {
+          path: "district",
+          select: "name",
+        },
+        {
+          path: "zone",
+          select: "name",
+        },
+      ])
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
