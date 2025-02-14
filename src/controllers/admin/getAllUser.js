@@ -2,13 +2,23 @@ const UserModel = require("../../models/userModel");
 
 const getAllUser = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = "", role, isActive } = req.query;
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      state,
+      district,
+      zone,
+      role,
+      isActive,
+    } = req.query;
 
     // Building the filter query
     const filter = {};
-    if (role) {
-      filter.role = role;
-    }
+    if (role) filter.role = role;
+    if (state) filter.state = state;
+    if (district) filter.district = district;
+    if (zone) filter.zone = zone;
 
     if (isActive !== undefined) {
       // Only apply the isActive filter if it is explicitly specified
