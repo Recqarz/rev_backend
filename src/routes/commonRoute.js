@@ -14,6 +14,7 @@ const {
   updateProfilePicture,
 } = require("../controllers/common/updateProfilePicture");
 const { upload } = require("../middlewares/multer.middleware");
+const { verifyFace } = require("../controllers/common/verifyFace.controller");
 
 const commonRoute = express.Router();
 
@@ -29,6 +30,7 @@ commonRoute.patch(
 );
 commonRoute.post("/send-otp", sendOTP);
 commonRoute.post("/verify-otp", verifyOTP);
+commonRoute.post("/verify-face", authMiddleware,upload.single("avatar"), verifyFace);
 commonRoute.patch("/forgot-password/reset-password", resetPassword);
 
 module.exports = commonRoute;
