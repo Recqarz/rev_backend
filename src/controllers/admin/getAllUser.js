@@ -16,9 +16,9 @@ const getAllUser = async (req, res) => {
     // Building the filter query
     const filter = {};
     if (role) filter.role = role;
-    if (state) filter.state = state;
-    if (district) filter.district = district;
-    if (zone) filter.zone = zone;
+    if (state) filter["address.state"] = state;
+    if (district) filter["address.district"] = district;
+    if (zone) filter["address.zone"] = zone;
 
     if (isActive !== undefined) {
       // Only apply the isActive filter if it is explicitly specified
@@ -48,11 +48,11 @@ const getAllUser = async (req, res) => {
 
     // Fetching users with pagination, filtering, and search
     const allUsers = await UserModel.find(query)
-    .populate([
-      { path: "address.state", select: "name" },
-      { path: "address.district", select: "name" },
-      { path: "address.zone", select: "name" }
-    ])
+      .populate([
+        { path: "address.state", select: "name" },
+        { path: "address.district", select: "name" },
+        { path: "address.zone", select: "name" },
+      ])
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
