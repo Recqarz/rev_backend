@@ -2,7 +2,15 @@ const UserModel = require("../../models/userModel");
 
 const fieldExecutiveList = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = "" } = req.query;
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      status,
+      state,
+      district,
+      zone,
+    } = req.query;
 
     // Building the search query
     const searchQuery = search
@@ -17,12 +25,24 @@ const fieldExecutiveList = async (req, res) => {
         }
       : {};
 
+    const filter = {};
+    if (status) filter.status = status;
+    if (state) filter["address.state"] = state;
+    if (district) filter["address.district"] = district;
+    if (zone) filter["address.zone"] = zone;
+
     // Combining filter and search queries
-    const query = { role: "fieldExecutive", ...searchQuery };
+    const query = { role: "fieldExecutive", ...searchQuery, ...filter };
 
     // Fetching users with pagination, filtering, and search
     const allUsers = await UserModel.find(query)
-      .populate("workForBank")
+      .populate([
+        { path: "workForBank", select: "bankName IFSC" },
+        { path: "address.state", select: "name" },
+        { path: "address.district", select: "name" },
+        { path: "address.zone", select: "name" },
+      ])
+      .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
