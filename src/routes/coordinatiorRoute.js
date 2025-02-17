@@ -7,6 +7,9 @@ const coordinatorMiddleware = require("../middlewares/coordinatorMiddleware");
 const { caseList } = require("../controllers/coordinatior/caseList");
 const { updateCase } = require("../controllers/coordinatior/updateCase");
 const { getCaseById } = require("../controllers/coordinatior/getCaseById");
+const {
+  coordinatorDashboardData,
+} = require("../controllers/coordinatior/coordinator.dashboard.controller");
 
 const coordinatorRoute = express.Router();
 
@@ -19,6 +22,11 @@ coordinatorRoute.get(
   "/fieldExecutive-list",
   coordinatorMiddleware,
   fieldExecutiveList
+);
+coordinatorRoute.get(
+  "/dashboard-data",
+  coordinatorMiddleware,
+  coordinatorDashboardData
 );
 
 module.exports = coordinatorRoute;
