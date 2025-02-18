@@ -49,6 +49,7 @@ const getAllUser = async (req, res) => {
     // Fetching users with pagination, filtering, and search
     const allUsers = await UserModel.find(query)
       .populate([
+        { path: "workForBank", select: "bankName branchName IFSC" },
         { path: "address.state", select: "name" },
         { path: "address.district", select: "name" },
         { path: "address.zone", select: "name" },
