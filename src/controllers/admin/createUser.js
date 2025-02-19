@@ -17,7 +17,7 @@ const createUser = async (req, res) => {
 
     // Ensure all required fields are provided
 
-    if (!firstName || !lastName || !email || !mobile || !role || !workForBank) {
+    if (!firstName || !lastName || !email || !mobile || !role) {
       return res
         .status(404)
         .send({ error: "Oops! Please fill all required fields!" });
@@ -33,6 +33,15 @@ const createUser = async (req, res) => {
       if (!address) {
         return res.status(400).send({ error: "Oops! address is required" });
       }
+
+      if (role === "supervisor") {
+        if (!Array.isArray(workForBank) || workForBank.length === 0) {
+          return res
+            .status(400)
+            .send({ error: "Oops! Enter a valid bank list" });
+        }
+      }
+
       const { longitude, latitude, formattedAddress } = geoLocation;
       if ((!longitude || !latitude, !formattedAddress)) {
         return res.status(400).send({ error: "Oops! Geolocation is required" });
@@ -98,7 +107,7 @@ const createUser = async (req, res) => {
       email,
       mobile,
       role,
-      workForBank,
+      workForBank: workForBank || [],
       userCode,
       password,
       address,
