@@ -25,11 +25,26 @@ const getFieldExecutiveAssignCase = async (req, res) => {
     // Combining filter and search queries
     const query = { fieldExecutiveId: req.user._id, ...filter, ...searchQuery };
 
-    const allAssignCases = await CaseModel.find(query).sort({ createdAt: -1 });
+    const allAssignCases = await CaseModel.find(query)
+      .populate([
+        {
+          path: "state",
+          select: "name",
+        },
+        {
+          path: "district",
+          select: "name",
+        },
+        {
+          path: "zone",
+          select: "name",
+        },
+      ])
+      .sort({ createdAt: -1 });
 
     return res
       .status(200)
-      .send({ message: "fetched all cases!", data: allAssignCases });
+      .send({ message: "fetched all cases******!", data: allAssignCases });
   } catch (error) {
     return res.status(400).send({ error: error.message });
   }

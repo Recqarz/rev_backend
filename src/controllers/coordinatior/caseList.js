@@ -3,22 +3,27 @@ const UserModel = require("../../models/userModel");
 
 const caseList = async (req, res) => {
   try {
-    const { page = 1, limit = 10, status, zone, search = "" } = req.query;
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      state,
+      district,
+      zone,
+      search = "",
+    } = req.query;
 
     const filter = {};
-    if (status) {
-      filter.status = status;
-    }
-    if (zone) {
-      filter.zone = zone;
-    }
+    if (status) filter.status = status;
+    if (state) filter.state = state;
+    if (district) filter.district = district;
+    if (zone) filter.zone = zone;
 
     // Building the search query
     const searchQuery = search
       ? {
           $or: [
             { caseCode: { $regex: search, $options: "i" } },
-            { zone: { $regex: search, $options: "i" } },
             { bankRefNo: { $regex: search, $options: "i" } },
             { clientName: { $regex: search, $options: "i" } },
             { BOV_ReportNo: { $regex: search, $options: "i" } },
@@ -31,14 +36,25 @@ const caseList = async (req, res) => {
 
     // Fetching users with pagination, filtering, and search
     const allCases = await CaseModel.find(query)
-      .populate({
-        path: "bankId",
-        select: "bankName branchName", // Example: Select specific fields from the populated document
-      })
-      .populate({
-        path: "fieldExecutiveId",
-        select: "firstName lastName email mobile userCode ", // Example: Select specific fields from the populated document
-      })
+      .populate([
+        { path: "bankId", select: "bankName branchName" },
+        {
+          path: "fieldExecutiveId",
+          select: "firstName lastName email mobile userCode",
+        },
+        {
+          path: "state",
+          select: "name",
+        },
+        {
+          path: "district",
+          select: "name",
+        },
+        {
+          path: "zone",
+          select: "name",
+        },
+      ])
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);

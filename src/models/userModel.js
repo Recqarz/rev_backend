@@ -103,10 +103,13 @@ const userSchema = new mongoose.Schema(
     voterId: {
       type: String,
     },
-    workForBank: {
-      type: mongoose.Schema.ObjectId,
-      ref: "banks",
-    },
+    workForBank: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "banks",
+        default: [],
+      },
+    ],
     bankDetails: {
       type: BankDetailsSchema,
       default: null, // Optional: Set to null if not required
@@ -156,6 +159,7 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+userSchema.index({ userGeoLocation: "2dsphere" });
 
 // Pre-save middleware to hash password
 userSchema.pre("save", async function (next) {
