@@ -1,5 +1,3 @@
-const mongoose = require("mongoose");
-const PropertyDetailsModel = require("../../models/propertyDetailsByFieldExecutiveModel");
 const CaseModel = require("../../models/caseModel");
 
 const getSupervisorCase = async (req, res) => {
