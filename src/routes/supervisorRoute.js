@@ -5,6 +5,6 @@ const {
 
 const superRoute = express.Router();
 
-superRoute.get("/data", getSupervisorCase);
+superRoute.get("/cases", getSupervisorCase);
 
 module.exports = { superRoute };
