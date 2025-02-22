@@ -8,6 +8,8 @@ const updateFieldExecutiveForm = async (req, res) => {
     const data = req.body;
     const { files } = req;
 
+    // console.log("files======)", files);
+
     if (!id) {
       return res.status(400).send({ error: "Please provide form-id" });
     }
@@ -30,24 +32,25 @@ const updateFieldExecutiveForm = async (req, res) => {
         consolidatedData[key] = value;
       }
     });
-
     if (parsingErrors.length > 0) {
       return res.status(400).send({ errors: parsingErrors });
     }
-    // uploading field-executive-spot-image;
-    const s3BucketURL = await uploadFileToS3(
-      files?.fieldExecutiveSpotImage[0].path,
-      files?.fieldExecutiveSpotImage[0].originalname
-    );
-    fs.unlinkSync(files?.fieldExecutiveSpotImage[0].path); // Use async unlink
+    if (files?.fieldExecutiveSpotImage) {
+      // uploading field-executive-spot-image;
+      const s3BucketURL = await uploadFileToS3(
+        files?.fieldExecutiveSpotImage[0].path,
+        files?.fieldExecutiveSpotImage[0].originalname
+      );
+      fs.unlinkSync(files?.fieldExecutiveSpotImage[0].path); // Use async unlink
 
-    if (!s3BucketURL) {
-      return res.status(404).send({
-        error:
-          "Something went wrong uploading Field-executive-spot-image on AWS S3",
-      });
+      if (!s3BucketURL) {
+        return res.status(404).send({
+          error:
+            "Something went wrong uploading Field-executive-spot-image on AWS S3",
+        });
+      }
+      consolidatedData.fieldExecutiveSpotImage = s3BucketURL.Location; // Add the URL to the fieldExecutiveSpotImage field
     }
-    consolidatedData.fieldExecutiveSpotImage = s3BucketURL.Location; // Add the URL to the fieldExecutiveSpotImage field
 
     // If files are available, upload them
     if (files?.images?.length > 0) {
@@ -97,6 +100,7 @@ const updateFieldExecutiveForm = async (req, res) => {
       updatedForm,
     });
   } catch (error) {
+    // console.log("error====>",error)
     return res
       .status(500)
       .send({ error: "Internal server error: " + error.message });
