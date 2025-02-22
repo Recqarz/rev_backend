@@ -15,10 +15,13 @@ const getSupervisorCase = async (req, res) => {
     const workForBank = req.user?.workForBank || []; // Ensure it's an array
 
     if (!Array.isArray(workForBank) || workForBank.length === 0) {
-      return res.status(400).send({ error: "No valid banks assigned to user." });
+      return res
+        .status(400)
+        .send({ error: "No valid banks assigned to user." });
     }
 
-    const filter = { status, bankId: { $in: workForBank } };
+    const filter = { bankId: { $in: workForBank } };
+    if (status) filter.status = status;
 
     // Ensure verifiedBy.fieldExecutive filtering works correctly
     if (verifiedByFieldExecutive === "true") {
