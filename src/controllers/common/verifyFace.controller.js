@@ -29,7 +29,10 @@ const verifyFace = async (req, res) => {
     const storedAvatarURL = user?.avatar;
 
     if (!storedAvatarURL) {
-      return res.status(404).send({ error: "User avatar not found!" });
+      fs.unlinkSync(file?.path);
+      return res.status(404).send({
+        error: "Your Profile picture not found. Please upload Profile picture!",
+      });
     }
 
     // Upload the new image to S3 for face comparison
