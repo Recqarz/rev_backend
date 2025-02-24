@@ -21,7 +21,13 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: true,
     match: [/^\d{6}$/, "Pincode must be exactly 6 digits"],
-  }
+  },
+});
+
+const verifiedBySchema = new mongoose.Schema({
+  fieldExecutive: { type: Boolean, default: false },
+  supervisor: { type: Boolean, default: false },
+  auditor: { type: Boolean, default: false },
 });
 
 const dailyQuerySchema = new mongoose.Schema(
@@ -131,6 +137,14 @@ const caseSchema = new mongoose.Schema(
       required: true,
       ref: "users",
     },
+    verifiedBy: {
+      type: verifiedBySchema,
+      default: () => ({
+        fieldExecutive: false,
+        supervisor: false,
+        auditor: false,
+      }),
+    },
     supervisorId: {
       type: mongoose.Schema.ObjectId,
       ref: "users",
@@ -144,7 +158,7 @@ const caseSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["process", "pending", "completed", "rejected"],
-      default: "pending",
+      default: "process",
       required: true,
     },
     visitDate: {

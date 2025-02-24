@@ -2,9 +2,13 @@ const express = require("express");
 const {
   getSupervisorCase,
 } = require("../controllers/supervisor/getAllSupervisorAssignCase");
+const getCaseAndFieldExecutiveFomData = require("../controllers/supervisor/getCaseAndFieldExecutiveFomData");
+const verifyCaseBySupervsor = require("../controllers/supervisor/verifyCaseBySupervsor");
 
-const superRoute = express.Router();
+const supervisorRoute = express.Router();
 
-superRoute.get("/data", getSupervisorCase);
+supervisorRoute.get("/cases", getSupervisorCase);
+supervisorRoute.get("/case/:caseId", getCaseAndFieldExecutiveFomData);
+supervisorRoute.patch("/case/:caseId/verify", verifyCaseBySupervsor);
 
-module.exports = { superRoute };
+module.exports = { supervisorRoute };

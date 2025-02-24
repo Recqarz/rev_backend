@@ -198,7 +198,7 @@ const propertyDetailsSchema = new mongoose.Schema(
     valueOfProperty: { type: Number, required: true },
     remarks: { type: String, required: true, trim: true },
     images: { type: [String], default: [] },
-    fieldExecutiveSpotImage: { type: String, required: true },
+    fieldExecutiveSpotImage: { type: String },
   },
   { timestamps: true }
 );

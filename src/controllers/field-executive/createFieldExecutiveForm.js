@@ -7,7 +7,16 @@ const createFieldExecutiveForm = async (req, res) => {
     const data = req.body;
     const { files } = req;
 
-    // console.log("files==", files);
+    if (!files?.images) {
+      return res.status(400).send({
+        error: "Please provide Property images",
+      });
+    }
+    if (!files?.fieldExecutiveSpotImage) {
+      return res.status(400).send({
+        error: "Please provide field executive spot image",
+      });
+    }
 
     if (!caseId) {
       return res.status(400).send({
