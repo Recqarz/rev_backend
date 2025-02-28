@@ -15,6 +15,7 @@ const verifyCaseByAuditor = async (req, res) => {
       {
         auditorId: userId,
         "verifiedBy.auditor": true,
+        status:"completed"
       },
       { new: true }
     );

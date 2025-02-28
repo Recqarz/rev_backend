@@ -8,10 +8,12 @@ const {
 const {
   verifyCaseByAuditor,
 } = require("../controllers/auditor/verifyCaseByAuditor");
+const { generateFinalReport } = require("../controllers/auditor/finalReports");
 const auditorRoute = express.Router();
 
 auditorRoute.get("/cases", getAllAuditorCases);
 auditorRoute.get("/cases/:caseId", getCaseDataByIdForAuditor);
 auditorRoute.patch("/cases/:caseId/verify", verifyCaseByAuditor);
+auditorRoute.get("/cases/:caseId/finalreport", generateFinalReport);
 
 module.exports = { auditorRoute };
