@@ -65,7 +65,7 @@ const generateFinalReport = async (req, res) => {
 
     //general information
     let clientName = caseData?.clientName || "N/A";
-    let contactNum=caseData?.contactNo;
+    let contactNum = caseData?.contactNo;
     let visitDate = caseData?.visitDate || "N/A";
     let personMetAtSite = PropertyDetails?.personMetAtSite || "N/A";
     let personMetAtMobile = PropertyDetails?.personMetAtSiteMobileNo || "N/A";
@@ -80,9 +80,9 @@ const generateFinalReport = async (req, res) => {
     let zone = caseData?.zone?.name || "N/A";
     let state = caseData?.state?.name || "N/A";
     let pinCode = caseData?.clientAddress?.pincode || "N/A";
-    let longitude = caseData?.clientGeolocation?.coordinates[0] || "N/A";
-    let latitude = caseData?.clientGeolocation?.coordinates[1] || "N/A";
-
+    let longitude = PropertyDetails?.geolocation?.coordinates[0] || "N/A";
+    let latitude = PropertyDetails?.geolocation?.coordinates[1] || "N/A";
+    
     //coordinator data
     let coName =
       `${caseData?.coordinatorId?.firstName}, ${caseData?.coordinatorId?.lastName}` ||
