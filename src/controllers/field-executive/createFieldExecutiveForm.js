@@ -1,3 +1,4 @@
+const CaseModel = require("../../models/caseModel");
 const PropertyDetailsModel = require("../../models/propertyDetailsByFieldExecutiveModel");
 const { uploadFileToS3 } = require("../../utils/aws");
 const fs = require("fs");
@@ -100,6 +101,18 @@ const createFieldExecutiveForm = async (req, res) => {
     // Save the consolidated data to the database
     const newData = await PropertyDetailsModel.create(consolidatedData);
     await newData.save();
+
+    const updatedCase = await CaseModel.findByIdAndUpdate(
+      caseId,
+      {
+        "verifiedBy.fieldExecutive": true,
+      },
+      { new: true }
+    );
+    if (!updatedCase) {
+      return res.status(404).send({ error: "Case not found or not updated" });
+    }
+
 
     return res.status(200).send({ message: "success", data: newData });
   } catch (error) {
