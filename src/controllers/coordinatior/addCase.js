@@ -67,7 +67,11 @@ const addCase = async (req, res) => {
           },
         },
       });
-      ("");
+      if (!fieldexecutive) {
+        return res.status(400).send({
+          error: "Somthing went wrong while searching field-executive!",
+        });
+      }
     }
     // console.log("***********fieldexecutive=====", fieldexecutive);
 
