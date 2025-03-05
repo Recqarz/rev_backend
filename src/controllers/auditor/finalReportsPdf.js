@@ -10,7 +10,6 @@ const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 const getFinalReportInPDF = async (req, res) => {
   try {
     const { caseId } = req.params;
-    console.log("caseId: ", caseId);
 
     const caseData = await CaseModel.findById(caseId).populate([
       { path: "bankId", select: "bankName branchName IFSC" },
@@ -70,7 +69,6 @@ const getFinalReportInPDF = async (req, res) => {
     let clientGeoFormattedAddress =
       caseData?.clientGeoFormattedAddress || "N/A";
 
-
     //coordinator data
     let coName =
       `${caseData?.coordinatorId?.firstName} ${caseData?.coordinatorId?.lastName}` ||
@@ -100,7 +98,6 @@ const getFinalReportInPDF = async (req, res) => {
     let auditorMobile = caseData?.auditorId?.mobile || "N/A";
 
     // property details
- 
 
     //roadPropertySubject
     let roadWidth = PropertyDetails?.roadPropertySubject?.roadWidth || "N/A";
@@ -124,13 +121,12 @@ const getFinalReportInPDF = async (req, res) => {
     let relationWithLoanApplicant =
       PropertyDetails?.relationWithLoanApplicant || "N/A";
 
-      let stageOfConstruction = PropertyDetails?.stageOfConstruction || "N/A";
-      let yearOfConstruction = PropertyDetails?.yearOfConstruction || "N/A";
-      let demarcationOfPlot = PropertyDetails?.demarcationOfPlot || "N/A";
+    let stageOfConstruction = PropertyDetails?.stageOfConstruction || "N/A";
+    let yearOfConstruction = PropertyDetails?.yearOfConstruction || "N/A";
+    let demarcationOfPlot = PropertyDetails?.demarcationOfPlot || "N/A";
 
-      let electricityMeterNo = PropertyDetails?.electricityMeterNo || "N/A";
-      let sewerageConnection = PropertyDetails?.sewerageConnection || false;
-
+    let electricityMeterNo = PropertyDetails?.electricityMeterNo || "N/A";
+    let sewerageConnection = PropertyDetails?.sewerageConnection || false;
 
     // details of rent property
     let tenantName =
@@ -178,8 +174,6 @@ const getFinalReportInPDF = async (req, res) => {
       })) || [];
 
     let images = PropertyDetails?.images;
-
-
 
     const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&zoom=15&size=600x300&markers=color:red%7C${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
 
@@ -247,128 +241,127 @@ const getFinalReportInPDF = async (req, res) => {
     const dwelingDataDetails = [
       ["Number Of Units At Stilt Floor", numberOfUnitsAtStiltFloor || "N/A"],
       ["Number Of Units Per Floor", numberOfUnitsPerFloor || "N/A"],
-      ["Total Units", totalUnits || "N/A"]
+      ["Total Units", totalUnits || "N/A"],
     ];
 
     const groundFloorDetails = [
       ["Use Of Ground Floor", useOfGroundFloor || "N/A"],
       ["Height Of Stilt Floor", heightOfStiltFloor || "N/A"],
-      ["Area Of Parking", areaOfParking || "N/A"]
+      ["Area Of Parking", areaOfParking || "N/A"],
     ];
 
     const rentDataDetails = [
       ["Tenant Name", tenantName || "N/A"],
       ["Tenant Mobile No.", tenantMobileNo || "N/A"],
       ["Year of tenancy", yearsOfTenancy || "N/A"],
-      ["Monthly Rent", monthlyRent || "N/A"]
+      ["Monthly Rent", monthlyRent || "N/A"],
     ];
 
     const plotAreaDetails = [
       ["Plot Length", plotLength || "N/A"],
-      ["Plot Width",  plotWidth || "N/A"]
+      ["Plot Width", plotWidth || "N/A"],
     ];
 
-    const remarksDetails = [
-      ["Remarks", remarks || "N/A"]
-    ];
+    const remarksDetails = [["Remarks", remarks || "N/A"]];
 
-    const valueOfPropertyDetails = [
-      ["Value", valueOfProperty || "N/A"]
-    ];
-  
+    const valueOfPropertyDetails = [["Value", valueOfProperty || "N/A"]];
 
     const otherDetails = [
-      ["Building Cracks",  buildingCracks || "N/A"],
+      ["Building Cracks", buildingCracks || "N/A"],
       ["Identification Of Property", identificationOfProperty || "N/A"],
-      ["Location Of Property",  locationOfProperty || "N/A"],
+      ["Location Of Property", locationOfProperty || "N/A"],
       ["Type Of Locality", typesOfLocality || "N/A"],
-      ["Type Of Area",  typesOfArea || "N/A"],
+      ["Type Of Area", typesOfArea || "N/A"],
       ["Neighbourhood", neighbourhood || "N/A"],
-      ["Type Of Property",  typesOfProperty || "N/A"],
+      ["Type Of Property", typesOfProperty || "N/A"],
       ["Current Use Of Property", currentUseOfProperty || "N/A"],
-      ["Occupancy Status",  occupancyStatus || "N/A"],
+      ["Occupancy Status", occupancyStatus || "N/A"],
       ["Relation with Loan Applicant", relationWithLoanApplicant || "N/A"],
-      ["Stage Of Construction",  stageOfConstruction || "N/A"],
+      ["Stage Of Construction", stageOfConstruction || "N/A"],
       ["Year Of Construction", yearOfConstruction || "N/A"],
-      ["Demarcation of plot",  demarcationOfPlot || "N/A"],
+      ["Demarcation of plot", demarcationOfPlot || "N/A"],
       ["Electricity Meter No.", electricityMeterNo || "N/A"],
-      ["Sewerage Connection",  sewerageConnection || "N/A"],
+      ["Sewerage Connection", sewerageConnection || "N/A"],
     ];
 
     const coordinatorDetails = [
       ["Name", coName || "N/A"],
-      ["Email",  coEmail || "N/A"],
-      ["Mobile Number",  coMobile || "N/A"]
+      ["Email", coEmail || "N/A"],
+      ["Mobile Number", coMobile || "N/A"],
     ];
     const fieldExecutiveDetails = [
       ["Name", feName || "N/A"],
-      ["Email",  feEmail || "N/A"],
-      ["Mobile Number",  feMobile || "N/A"]
+      ["Email", feEmail || "N/A"],
+      ["Mobile Number", feMobile || "N/A"],
     ];
     const supervisorDetails = [
       ["Name", superName || "N/A"],
-      ["Email",  superEmail || "N/A"],
-      ["Mobile Number",  superMobile || "N/A"]
+      ["Email", superEmail || "N/A"],
+      ["Mobile Number", superMobile || "N/A"],
     ];
     const auditorDetails = [
       ["Name", auditorName || "N/A"],
-      ["Email",  auditorEmail || "N/A"],
-      ["Mobile Number",  auditorMobile || "N/A"]
+      ["Email", auditorEmail || "N/A"],
+      ["Mobile Number", auditorMobile || "N/A"],
     ];
 
-    const startX = 50;
-    let startY = doc.y + 10;
     const leftPadding = 10;
     const tableWidth = 400;
+    const pageWidth = doc.page.width;
+    const startX = (pageWidth - tableWidth) / 2;
+    let startY = doc.y + 10;
     
-    // Function to draw standard tables
     const drawTable = (title, data) => {
       if (startY + data.length * 30 > doc.page.height - 100) {
         doc.addPage();
-        startY = 50;
+        startY = 50; // Reset startY for new page
       }
     
-      doc.fontSize(16).font("Helvetica-Bold").text(title, startX, startY);
-      startY += 30;
+      // Draw Title
+      doc.fontSize(12).font("Helvetica-Bold").text(title, startX, startY);
+      startY += 15;
     
+      // Draw Table
       data.forEach((row) => {
-        let x = startX;
+        let x = startX; // Start from the centered position
         row.forEach((cell) => {
           doc.rect(x, startY, tableWidth / 2, 30).stroke();
-          doc.font("Helvetica").fontSize(12).text(cell, x + leftPadding, startY + 8, {
-            width: tableWidth / 2 - leftPadding,
-            align: "left",
-          });
+          doc
+            .font("Helvetica")
+            .fontSize(12)
+            .text(cell, x + leftPadding, startY + 8, {
+              width: tableWidth / 2 - leftPadding,
+              align: "left",
+            });
           x += tableWidth / 2;
         });
         startY += 30;
       });
     
-      startY += 15;
+      startY += 15; // Add spacing after the table
     };
     
-    // Function to handle Remarks separately
+    
     const drawRemarks = (title, remarks) => {
       if (startY + 50 > doc.page.height - 100) {
         doc.addPage();
         startY = 50;
       }
-    
-      doc.fontSize(16).font("Helvetica-Bold").text(title, startX, startY);
+
+      doc.fontSize(12).font("Helvetica-Bold").text(title, startX, startY);
       startY += 20;
-    
+
       const remarksWidth = tableWidth; // Full width
       const textHeight = doc.heightOfString(remarks, {
         width: remarksWidth - leftPadding,
         align: "left",
       });
-    
-      // Check if remarks fit on the current page, else move to a new one
+
       if (startY + textHeight > doc.page.height - 50) {
         doc.addPage();
         startY = 50;
       }
-    
+
       doc.rect(startX, startY, remarksWidth, textHeight + 10).stroke();
       doc
         .font("Helvetica")
@@ -377,10 +370,68 @@ const getFinalReportInPDF = async (req, res) => {
           width: remarksWidth - leftPadding,
           align: "left",
         });
-    
+
       startY += textHeight + 20;
     };
-    
+
+    const drawFloorTable = (title, data) => {
+      if (startY + data.length * 30 > doc.page.height - 100) {
+        doc.addPage();
+        startY = 50;
+      }
+
+      doc.fontSize(12).font("Helvetica-Bold").text(title, startX, startY);
+      startY += 15;
+
+      const colWidth = tableWidth / 4; 
+
+      // Draw Table Header
+      let x = startX;
+      const headers = [
+        "Floor Name",
+        "Accommodation",
+        "Built-Up Area",
+        "Projection Area",
+      ];
+      headers.forEach((header) => {
+        doc.rect(x, startY, colWidth, 30).stroke();
+        doc
+          // .font("Helvetica-Bold")
+          .fontSize(10)
+          .text(header, x + leftPadding, startY + 8, {
+            width: colWidth - leftPadding,
+            align: "left",
+          });
+        x += colWidth;
+      });
+      startY += 30;
+
+      // Draw Table Rows
+      data.forEach((row) => {
+        let x = startX;
+        const values = [
+          row.floorName,
+          row.accommodation,
+          row.builtupArea.toString(),
+          row.projectionArea.toString(),
+        ];
+        values.forEach((cell) => {
+          doc.rect(x, startY, colWidth, 30).stroke();
+          doc
+            .font("Helvetica")
+            .fontSize(12)
+            .text(cell, x + leftPadding, startY + 8, {
+              width: colWidth - leftPadding,
+              align: "left",
+            });
+          x += colWidth;
+        });
+        startY += 30;
+      });
+
+      startY += 15;
+    };
+
     // List of tables
     const tables = [
       { title: "1. General", data: GeneralData },
@@ -395,26 +446,119 @@ const getFinalReportInPDF = async (req, res) => {
       { title: "11. Value Of Property", data: valueOfPropertyDetails },
       { title: "13. Others", data: otherDetails },
       { title: "14. Coordinator Details", data: coordinatorDetails },
-      { title: "15. Engineer who visited the property", data: fieldExecutiveDetails },
+      {
+        title: "15. Engineer who visited the property",
+        data: fieldExecutiveDetails,
+      },
       { title: "16. Drafter Details", data: supervisorDetails },
       { title: "17. Finalizer Details", data: auditorDetails },
     ];
-    
-    // Render standard tables
+
+    // Render tables
     tables.forEach(({ title, data }) => {
+      if (title === "11. Value Of Property") {
+        drawRemarks("10. Remarks", remarksDetails);
+      }
       drawTable(title, data);
+      if (title === "11. Value Of Property") {
+        drawFloorTable("12. Floor Details", floorData);
+      }
     });
+
+    if (startY + 420 > doc.page.height - 50) {
+      startY = 50;
+    }
     
-    // Render remarks separately
-    drawRemarks("10. Remarks", remarksDetails);
+    const imageWidth = 200; // Reduced width
+    const imageHeight = 120; // Reduced height
+    const columnGap = 20; // Space between columns
+    const rowGap = 30; // Space between rows
+    
+    let imageY = 50;
+    
+    if (images.length > 0) {
+      doc.addPage();
+      let imagesPerRow = 2; // Number of images per row
+      let totalImageWidth = imagesPerRow * imageWidth + (imagesPerRow - 1) * columnGap;
+      let startX = (doc.page.width - totalImageWidth) / 2; // Center images horizontally
+    
+      doc
+        .fontSize(12)
+        .font("Helvetica-Bold")
+        .text("18. Property Images", startX, imageY)
+        .moveDown(0.5);
+    
+      imageY += 20; // Extra space after heading
+    
+      let imageX = startX;
+    
+      for (let i = 0; i < images.length; i++) {
+        try {
+          const response = await axios.get(images[i], {
+            responseType: "arraybuffer",
+          });
+          const imageBuffer = Buffer.from(response.data, "binary");
+    
+          doc.image(imageBuffer, imageX, imageY, {
+            width: imageWidth,
+            height: imageHeight,
+          });
+    
+          // Add Image Text BELOW the image
+          doc
+            .fontSize(12)
+            .fillColor("black")
+            .text(`Image ${i + 1}`, imageX, imageY + imageHeight + 5, {
+              align: "center",
+              width: imageWidth,
+            });
+    
+          // Adjust X and Y positioning for next image
+          if ((i + 1) % imagesPerRow === 0) {
+            imageX = startX;
+            imageY += imageHeight + rowGap + 20; // Space for text
+          } else {
+            imageX += imageWidth + columnGap;
+          }
+    
+          // Check if we need a new page
+          if (imageY + imageHeight > doc.page.height - 100) {
+            doc.addPage();
+            imageX = startX;
+            imageY = 50;
+          }
+        } catch (error) {
+          console.error(`Error adding image ${images[i]}:`, error.message);
+        }
+      }
+    }
+    
+    // Extra space before "Location Map"
+    imageY += 100;
+    
+    if (imageY + 350 > doc.page.height - 50) {
+      doc.addPage();
+      imageY = 80;
+    }
+     
+
+doc.moveDown(3);
+doc
+  .fontSize(12)
+  .font("Helvetica-Bold")
+  .text("19. Location Map", startX, imageY)
+  .moveDown(2);
+
+doc.image(locationImage, startX, imageY + 20, {
+  width: doc.page.width - 2 * startX,
+});
+
     
     doc.end();
-    
-
     writeStream.on("finish", () => {
       res.download(filePath, fileName, (err) => {
         if (err) console.error("Error downloading file:", err);
-        fs.unlinkSync(filePath); // Delete file after download
+        fs.unlinkSync(filePath); 
       });
     });
   } catch (err) {
