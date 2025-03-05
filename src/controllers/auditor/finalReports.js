@@ -13,9 +13,14 @@ const {
 } = require("docx");
 const axios = require("axios");
 const fs = require("fs");
+const path = require("path");
 const PropertyDetailsModel = require("../../models/propertyDetailsByFieldExecutiveModel");
 const CaseModel = require("../../models/caseModel");
 require("dotenv").config();
+
+
+const imagePath = path.join(__dirname, "../../utils/REV_logo.png");
+const imageBuffer = fs.readFileSync(imagePath);
 
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
@@ -578,12 +583,38 @@ const generateFinalReport = async (req, res) => {
           children: [
             new Paragraph({
               children: [
-                new TextRun({ text: "Final Report", bold: true, size: 60 }),
+                new ImageRun({
+                  data: imageBuffer,
+                  transformation: { width: 200, height: 75 }, // Adjust size as needed
+                }),
+              ],
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 20 }, // Space between image and text
+            }),
+
+            new Paragraph({
+              children: [
+                new TextRun({ text: "Final Report", bold: true, size: 40 }),
               ],
               alignment: AlignmentType.CENTER,
               spacing: { after: 200 },
             }),
-            // new Paragraph({ children: [new TextRun({ text: `Ref No: KOTAK/${caseId}`, bold: true })] }),
+           
+            new Paragraph({
+              children: [new TextRun({ text: `Ref No: ${caseData?.bankRefNo}`, bold: true })],
+              spacing: { before: 1000, after: 150 }, // Adds margin below the paragraph
+              alignment: AlignmentType.LEFT, // Aligns text to the left
+            }),
+            new Paragraph({
+              children: [new TextRun({ text: `Report No: ${caseData?.BOV_ReportNo}`, bold: true })],
+              spacing: { after: 150 },
+              alignment: AlignmentType.LEFT,
+            }),
+            new Paragraph({
+              children: [new TextRun({ text: `Case: ${caseId}`, bold: true })],
+              spacing: { after: 150 },
+              alignment: AlignmentType.LEFT,
+            }),
 
             new Paragraph({ text: "" }), // Spacer
             new Paragraph({
@@ -801,7 +832,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "18. Images ",
+                  text: "18. Property Images",
                   bold: true,
                   size: 24,
                 }),
@@ -815,7 +846,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "17. Location Map",
+                  text: "19. Location Map",
                   bold: true,
                   size: 24,
                 }),
