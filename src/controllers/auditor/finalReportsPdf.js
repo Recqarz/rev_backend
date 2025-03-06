@@ -1,11 +1,13 @@
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
+const path = require("path");
 const PropertyDetailsModel = require("../../models/propertyDetailsByFieldExecutiveModel");
 const CaseModel = require("../../models/caseModel");
 require("dotenv").config();
 const axios = require("axios");
 
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+const logoPath = path.join(__dirname, "../../utils/REV_logo.png");
 
 const getFinalReportInPDF = async (req, res) => {
   try {
@@ -186,11 +188,43 @@ const getFinalReportInPDF = async (req, res) => {
     const writeStream = fs.createWriteStream(filePath);
     doc.pipe(writeStream);
 
+    // Logo
+    const leftMargin2 = 230;
+    const topMargin2 = 0; 
+
+    doc.image(logoPath, leftMargin2, doc.y + topMargin2, {
+      fit: [200, 75],
+    });
+    doc.moveDown();
+
+    const topMargin = 60; // Adjust the margin as needed
+
+    doc.y += topMargin;
     // Title
     doc
       .font("Helvetica-Bold")
-      .fontSize(32)
-      .text("Final Report", { align: "center" })
+      .fontSize(10)
+      .text(`TECHNICAL APPRAISAL REPORT FOR ${bankName.toUpperCase()}`, {
+        align: "center",
+      })
+      .moveDown();
+
+    const leftMargin = 100;
+    const topMargin3 = 30;
+    doc.y += topMargin3;
+
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(8)
+      .text(`Report No: ${caseData?.BOV_ReportNo}`, leftMargin, doc.y).moveDown();;
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(8)
+      .text(`Ref No: ${caseData?.bankRefNo}`, leftMargin, doc.y).moveDown();;
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(8)
+      .text(`Case: ${caseId}`, leftMargin, doc.y)
       .moveDown();
 
     const GeneralData = [
@@ -263,7 +297,6 @@ const getFinalReportInPDF = async (req, res) => {
     ];
 
     const remarksDetails = [["Remarks", remarks || "N/A"]];
-
     const valueOfPropertyDetails = [["Value", valueOfProperty || "N/A"]];
 
     const otherDetails = [
@@ -310,17 +343,17 @@ const getFinalReportInPDF = async (req, res) => {
     const pageWidth = doc.page.width;
     const startX = (pageWidth - tableWidth) / 2;
     let startY = doc.y + 10;
-    
+
     const drawTable = (title, data) => {
       if (startY + data.length * 30 > doc.page.height - 100) {
         doc.addPage();
         startY = 50; // Reset startY for new page
       }
-    
+
       // Draw Title
       doc.fontSize(12).font("Helvetica-Bold").text(title, startX, startY);
       startY += 15;
-    
+
       // Draw Table
       data.forEach((row) => {
         let x = startX; // Start from the centered position
@@ -337,11 +370,10 @@ const getFinalReportInPDF = async (req, res) => {
         });
         startY += 30;
       });
-    
+
       startY += 15; // Add spacing after the table
     };
-    
-    
+
     const drawRemarks = (title, remarks) => {
       if (startY + 50 > doc.page.height - 100) {
         doc.addPage();
@@ -383,7 +415,7 @@ const getFinalReportInPDF = async (req, res) => {
       doc.fontSize(12).font("Helvetica-Bold").text(title, startX, startY);
       startY += 15;
 
-      const colWidth = tableWidth / 4; 
+      const colWidth = tableWidth / 4;
 
       // Draw Table Header
       let x = startX;
@@ -435,75 +467,76 @@ const getFinalReportInPDF = async (req, res) => {
     // List of tables
     const tables = [
       { title: "1. General", data: GeneralData },
-      { title: "2. Address Details", data: addressDetails },
-      { title: "3. Bank Details", data: bankDetails },
-      { title: "4. Road Property", data: roadPropertyDetails },
-      { title: "5. Structure Of Building", data: buildingStructureDetails },
-      { title: "6. Dwelling Unit", data: dwelingDataDetails },
-      { title: "7. Ground Floor Details", data: groundFloorDetails },
-      { title: "8. Rent Details", data: rentDataDetails },
-      { title: "9. Plot Area", data: plotAreaDetails },
-      { title: "11. Value Of Property", data: valueOfPropertyDetails },
+      { title: "2. Details of the Property", data: addressDetails },
+      { title: "3. Bank details", data: bankDetails },
+      { title: "4. Road property", data: roadPropertyDetails },
+      { title: "5. Structure of building", data: buildingStructureDetails },
+      { title: "6. Dwelling unit", data: dwelingDataDetails },
+      { title: "7. Ground floor details", data: groundFloorDetails },
+      { title: "8. Rent details", data: rentDataDetails },
+      { title: "9. Plot area", data: plotAreaDetails },
+      { title: "11. Value of property", data: valueOfPropertyDetails },
       { title: "13. Others", data: otherDetails },
-      { title: "14. Coordinator Details", data: coordinatorDetails },
+      { title: "14. Coordinator details", data: coordinatorDetails },
       {
         title: "15. Engineer who visited the property",
         data: fieldExecutiveDetails,
       },
-      { title: "16. Drafter Details", data: supervisorDetails },
-      { title: "17. Finalizer Details", data: auditorDetails },
+      { title: "16. Drafter details", data: supervisorDetails },
+      { title: "17. Finalizer details", data: auditorDetails },
     ];
 
     // Render tables
     tables.forEach(({ title, data }) => {
-      if (title === "11. Value Of Property") {
+      if (title === "11. Value of property") {
         drawRemarks("10. Remarks", remarksDetails);
       }
       drawTable(title, data);
-      if (title === "11. Value Of Property") {
-        drawFloorTable("12. Floor Details", floorData);
+      if (title === "11. Value of property") {
+        drawFloorTable("12. Floor details", floorData);
       }
     });
 
     if (startY + 420 > doc.page.height - 50) {
       startY = 50;
     }
-    
+
     const imageWidth = 200; // Reduced width
     const imageHeight = 120; // Reduced height
     const columnGap = 20; // Space between columns
     const rowGap = 30; // Space between rows
-    
+
     let imageY = 50;
-    
+
     if (images.length > 0) {
       doc.addPage();
       let imagesPerRow = 2; // Number of images per row
-      let totalImageWidth = imagesPerRow * imageWidth + (imagesPerRow - 1) * columnGap;
+      let totalImageWidth =
+        imagesPerRow * imageWidth + (imagesPerRow - 1) * columnGap;
       let startX = (doc.page.width - totalImageWidth) / 2; // Center images horizontally
-    
+
       doc
         .fontSize(12)
         .font("Helvetica-Bold")
-        .text("18. Property Images", startX, imageY)
+        .text("18. Property images", startX, imageY)
         .moveDown(0.5);
-    
+
       imageY += 20; // Extra space after heading
-    
+
       let imageX = startX;
-    
+
       for (let i = 0; i < images.length; i++) {
         try {
           const response = await axios.get(images[i], {
             responseType: "arraybuffer",
           });
           const imageBuffer = Buffer.from(response.data, "binary");
-    
+
           doc.image(imageBuffer, imageX, imageY, {
             width: imageWidth,
             height: imageHeight,
           });
-    
+
           // Add Image Text BELOW the image
           doc
             .fontSize(12)
@@ -512,7 +545,7 @@ const getFinalReportInPDF = async (req, res) => {
               align: "center",
               width: imageWidth,
             });
-    
+
           // Adjust X and Y positioning for next image
           if ((i + 1) % imagesPerRow === 0) {
             imageX = startX;
@@ -520,7 +553,7 @@ const getFinalReportInPDF = async (req, res) => {
           } else {
             imageX += imageWidth + columnGap;
           }
-    
+
           // Check if we need a new page
           if (imageY + imageHeight > doc.page.height - 100) {
             doc.addPage();
@@ -532,33 +565,31 @@ const getFinalReportInPDF = async (req, res) => {
         }
       }
     }
-    
+
     // Extra space before "Location Map"
     imageY += 100;
-    
+
     if (imageY + 350 > doc.page.height - 50) {
       doc.addPage();
       imageY = 80;
     }
-     
 
-doc.moveDown(3);
-doc
-  .fontSize(12)
-  .font("Helvetica-Bold")
-  .text("19. Location Map", startX, imageY)
-  .moveDown(2);
+    doc.moveDown(3);
+    doc
+      .fontSize(12)
+      .font("Helvetica-Bold")
+      .text("19. Location map", startX, imageY)
+      .moveDown(2);
 
-doc.image(locationImage, startX, imageY + 20, {
-  width: doc.page.width - 2 * startX,
-});
+    doc.image(locationImage, startX, imageY + 20, {
+      width: doc.page.width - 2 * startX,
+    });
 
-    
     doc.end();
     writeStream.on("finish", () => {
       res.download(filePath, fileName, (err) => {
         if (err) console.error("Error downloading file:", err);
-        fs.unlinkSync(filePath); 
+        fs.unlinkSync(filePath);
       });
     });
   } catch (err) {

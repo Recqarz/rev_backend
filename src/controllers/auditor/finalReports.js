@@ -594,7 +594,7 @@ const generateFinalReport = async (req, res) => {
 
             new Paragraph({
               children: [
-                new TextRun({ text: "Final Report", bold: true, size: 40 }),
+                new TextRun({ text:`TECHNICAL APPRAISAL REPORT FOR ${bankName.toUpperCase()}`, bold: true, size: 32 }),
               ],
               alignment: AlignmentType.CENTER,
               spacing: { after: 200 },
@@ -643,7 +643,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({ text: "" }), // Spacer
             new Paragraph({
               children: [
-                new TextRun({ text: "3. Bank Details", bold: true, size: 24 }),
+                new TextRun({ text: "3. Bank details", bold: true, size: 24 }),
               ],
               spacing: { before: 100, after: 100 }, // Add space before and after
               alignment: AlignmentType.LEFT,
@@ -652,7 +652,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({ text: "" }), // Spacer
             new Paragraph({
               children: [
-                new TextRun({ text: "4. Road Property", bold: true, size: 24 }),
+                new TextRun({ text: "4. Road property", bold: true, size: 24 }),
               ],
               spacing: { before: 100, after: 100 }, // Add space before and after
               alignment: AlignmentType.LEFT,
@@ -663,7 +663,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "5. Structure Of Building",
+                  text: "5. Structure of building",
                   bold: true,
                   size: 24,
                 }),
@@ -676,7 +676,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({ text: "" }), // Spacer
             new Paragraph({
               children: [
-                new TextRun({ text: "6. Dwelling Unit", bold: true, size: 24 }),
+                new TextRun({ text: "6. Dwelling unit", bold: true, size: 24 }),
               ],
               spacing: { before: 100, after: 100 }, // Add space before and after
               alignment: AlignmentType.LEFT,
@@ -687,7 +687,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "7. Ground Floor Details",
+                  text: "7. Ground floor details",
                   bold: true,
                   size: 24,
                 }),
@@ -701,7 +701,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "8. Rent Details",
+                  text: "8. Rent details",
                   bold: true,
                   size: 24,
                 }),
@@ -714,7 +714,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({ text: "" }), // Spacer
             new Paragraph({
               children: [
-                new TextRun({ text: "9. Plot Area", bold: true, size: 24 }),
+                new TextRun({ text: "9. Plot area", bold: true, size: 24 }),
               ],
               spacing: { before: 100, after: 100 }, // Add space before and after
               alignment: AlignmentType.LEFT,
@@ -739,7 +739,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "11. Value Of Property",
+                  text: "11. Value of property",
                   bold: true,
                   size: 24,
                 }),
@@ -753,7 +753,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "12. Floor Details",
+                  text: "12. Floor details",
                   bold: true,
                   size: 24,
                 }),
@@ -777,7 +777,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "14. Coordinator Details",
+                  text: "14. Coordinator details",
                   bold: true,
                   size: 24,
                 }),
@@ -832,7 +832,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "18. Property Images",
+                  text: "18. Property images",
                   bold: true,
                   size: 24,
                 }),
@@ -846,7 +846,7 @@ const generateFinalReport = async (req, res) => {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "19. Location Map",
+                  text: "19. Location map",
                   bold: true,
                   size: 24,
                 }),
