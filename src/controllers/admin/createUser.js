@@ -34,7 +34,7 @@ const createUser = async (req, res) => {
         return res.status(400).send({ error: "Oops! address is required" });
       }
 
-      if (role === "supervisor") {
+      if (role === "supervisor" || role === "auditor") {
         if (!Array.isArray(workForBank) || workForBank.length === 0) {
           return res
             .status(400)
