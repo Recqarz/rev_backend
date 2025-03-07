@@ -1,5 +1,5 @@
 const dotenv = require("dotenv");
-dotenv.config()
+dotenv.config();
 const nodemailer = require("nodemailer");
 const axios = require("axios");
 const PDFDocument = require("pdfkit");
@@ -38,7 +38,7 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function sendEmailWithOrderSheet(email, filepath, fileName) {
+async function sendEmailWithOrderSheet(email, filepath, fileName, caseId) {
   const maxRetries = 4;
   let attempts = 0;
 
@@ -46,7 +46,11 @@ async function sendEmailWithOrderSheet(email, filepath, fileName) {
   const outlookPassword = process.env.OUTLOOK_PASSWORD;
   const fromEmail = process.env.FROMEMAIL;
   const subject = `Final Report`;
-  const body = `Please find the attached PDF report.`;
+  const body = `Please find the final report in PDF format attached.
+
+Best Regards,
+REV_RECQARZ
+`;
 
   await emailQueue.addToQueue(async () => {
     while (attempts < maxRetries) {
@@ -68,11 +72,29 @@ async function sendEmailWithOrderSheet(email, filepath, fileName) {
           text: body,
           attachments: [
             {
-              filename: fileName, 
-              path: filepath, 
+              filename: fileName,
+              path: filepath,
             },
           ],
         };
+
+        const updatedCase = await CaseModel.findByIdAndUpdate(
+          caseId,
+          {
+            "reportDelivery.emailStatus.pdf.status": true,
+            $push: {
+              "reportDelivery.emailStatus.pdf.emailUserLists": {
+                $each: Array.isArray(email) ? email : [email],
+              },
+            },
+          },
+          { new: true }
+        );
+        if (!updatedCase) {
+          return res
+            .status(404)
+            .send({ error: "Case not found or not updated" });
+        }
 
         await transporter.sendMail(mailOptions);
         await delay(500);
@@ -661,29 +683,30 @@ const sendFinalReportInPDF = async (req, res) => {
     doc.moveDown(10);
 
     doc
-    .fontSize(12)
-    .font("Helvetica-Bold")
-    .text("19. Location map", startX, imageY+60)
-    .moveDown(2);
+      .fontSize(12)
+      .font("Helvetica-Bold")
+      .text("19. Location map", startX, imageY + 60)
+      .moveDown(2);
 
-  doc.image(locationImage, startX, imageY + 80, {
-    width: doc.page.width - 2 * startX,
-  });
+    doc.image(locationImage, startX, imageY + 80, {
+      width: doc.page.width - 2 * startX,
+    });
 
     doc.end();
     writeStream.on("finish", async () => {
-      await sendEmailWithOrderSheet(emails, filePath, fileName);
-      res.status(200).json({success:true, message: "PDF sent on email successfully" });
+      for (const email of emails) {
+        if (email.includes("@")) {
+          await sendEmailWithOrderSheet(email, filePath, fileName, caseId);
+        }
+      }
+      res
+        .status(200)
+        .json({ success: true, message: "PDF sent on email successfully" });
       fs.unlinkSync(filePath);
     });
   } catch (err) {
-    return res.status(400).json({success:false, error: err.message });
+    return res.status(400).json({ success: false, error: err.message });
   }
 };
 
-
-
-
-
-module.exports = {sendFinalReportInPDF};
-
+module.exports = { sendFinalReportInPDF };

@@ -46,7 +46,7 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function sendWhatsAppInPDF(number, filepath, filename) {
+async function sendWhatsAppInPDF(number, filepath, filename, caseId) {
   const maxRetries = 4;
   let attempts = 0;
   await whatsappQueue.addToQueue(async () => {
@@ -87,6 +87,25 @@ async function sendWhatsAppInPDF(number, filepath, filename) {
           },
         });
         await delay(100);
+
+        const updatedCase = await CaseModel.findByIdAndUpdate(
+          caseId,
+          {
+            "reportDelivery.whatsAppStatus.pdf.status": true,
+            $push: {
+              "reportDelivery.whatsAppStatus.pdf.wpUserLists": {
+                $each: Array.isArray(number) ? number : [number],
+              },
+            },
+          },
+          { new: true }
+        );
+        if (!updatedCase) {
+          return res
+            .status(404)
+            .send({ error: "Case not found or not updated" });
+        }
+
         return response.data;
       } catch (error) {
         attempts++;
@@ -702,18 +721,18 @@ const sendwhatsappFinalReportInPDF = async (req, res) => {
 
       try {
         for (const num of whatsAppNumbers) {
-          await sendWhatsAppInPDF(num, filePath, fileName);
+          if (num.toString().length == 10) {
+            await sendWhatsAppInPDF(num, filePath, fileName, caseId);
+          }
         }
         fs.unlink(filePath, (err) => {
           if (err) console.error("Failed to delete file:", err);
         });
 
-        res
-          .status(200)
-          .json({
-            success: true,
-            message: "PDF sent on WhatsApp successfully",
-          });
+        res.status(200).json({
+          success: true,
+          message: "PDF sent on WhatsApp successfully",
+        });
       } catch (error) {
         console.error("Failed to send WhatsApp message:", error);
         res
@@ -722,7 +741,7 @@ const sendwhatsappFinalReportInPDF = async (req, res) => {
       }
     });
   } catch (err) {
-    return res.status(400).json({success:false, error: err.message });
+    return res.status(400).json({ success: false, error: err.message });
   }
 };
 
