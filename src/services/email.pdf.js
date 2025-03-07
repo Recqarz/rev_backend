@@ -90,9 +90,9 @@ async function sendEmailWithOrderSheet(email, filepath, fileName) {
 const sendFinalReportInPDF = async (req, res) => {
   try {
     const { caseId } = req.params;
-    const { email } = req.body; // Array of emails
+    const { emails } = req.body; // Array of emails
 
-    if (!email || !Array.isArray(email) || email.length === 0) {
+    if (!emails || !Array.isArray(emails) || emails.length === 0) {
       return res.status(400).json({ message: "Invalid email array" });
     }
 
@@ -672,12 +672,12 @@ const sendFinalReportInPDF = async (req, res) => {
 
     doc.end();
     writeStream.on("finish", async () => {
-      await sendEmailWithOrderSheet(email, filePath, fileName);
-      res.status(200).json({ message: "PDF sent on email successfully" });
+      await sendEmailWithOrderSheet(emails, filePath, fileName);
+      res.status(200).json({success:true, message: "PDF sent on email successfully" });
       fs.unlinkSync(filePath);
     });
   } catch (err) {
-    return res.status(400).json({ error: err.message });
+    return res.status(400).json({success:false, error: err.message });
   }
 };
 

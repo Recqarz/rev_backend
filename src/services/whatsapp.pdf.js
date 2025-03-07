@@ -110,7 +110,11 @@ const sendwhatsappFinalReportInPDF = async (req, res) => {
     const { caseId } = req.params;
     const { whatsAppNumbers } = req.body; // Array of emails
 
-    if (!whatsAppNumbers || !Array.isArray(whatsAppNumbers) || whatsAppNumbers.length === 0) {
+    if (
+      !whatsAppNumbers ||
+      !Array.isArray(whatsAppNumbers) ||
+      whatsAppNumbers.length === 0
+    ) {
       return res.status(400).json({ message: "Invalid number array" });
     }
 
@@ -704,14 +708,21 @@ const sendwhatsappFinalReportInPDF = async (req, res) => {
           if (err) console.error("Failed to delete file:", err);
         });
 
-        res.status(200).json({ message: "PDF sent on WhatsApp successfully" });
+        res
+          .status(200)
+          .json({
+            success: true,
+            message: "PDF sent on WhatsApp successfully",
+          });
       } catch (error) {
         console.error("Failed to send WhatsApp message:", error);
-        res.status(500).json({ error: "Failed to send WhatsApp message" });
+        res
+          .status(500)
+          .json({ success: false, error: "Failed to send WhatsApp message" });
       }
     });
   } catch (err) {
-    return res.status(400).json({ error: err.message });
+    return res.status(400).json({success:false, error: err.message });
   }
 };
 
