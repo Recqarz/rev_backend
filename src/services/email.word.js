@@ -52,7 +52,7 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function sendEmailWithOrderSheet(email, filepath, fileName) {
+async function sendEmailWithReport(email, filepath, fileName, caseId) {
   const maxRetries = 4;
   let attempts = 0;
 
@@ -60,7 +60,10 @@ async function sendEmailWithOrderSheet(email, filepath, fileName) {
   const outlookPassword = process.env.OUTLOOK_PASSWORD;
   const fromEmail = process.env.FROMEMAIL;
   const subject = `Final Report`;
-  const body = `Please find the attached PDF report.`;
+  const body = `Please find the final report in MS Word format attached.
+
+Best Regards,
+REV_RECQARZ`;
 
   await emailQueue.addToQueue(async () => {
     while (attempts < maxRetries) {
@@ -87,6 +90,24 @@ async function sendEmailWithOrderSheet(email, filepath, fileName) {
             },
           ],
         };
+
+        const updatedCase = await CaseModel.findByIdAndUpdate(
+          caseId,
+          {
+            "reportDelivery.emailStatus.msWord.status": true,
+            $push: {
+              "reportDelivery.emailStatus.msWord.emailUserLists": {
+                $each: Array.isArray(email) ? email : [email],
+              },
+            },
+          },
+          { new: true }
+        );
+        if (!updatedCase) {
+          return res
+            .status(404)
+            .send({ error: "Case not found or not updated" });
+        }
 
         await transporter.sendMail(mailOptions);
         await delay(500);
@@ -982,13 +1003,17 @@ const sendEmailFinalReportWord = async (req, res) => {
     }
 
     fs.writeFileSync(filePath, buffer);
-    await sendEmailWithOrderSheet(emails, filePath, fileName);
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "MS Word report sent on email successfully",
-      });
+    // await sendEmailWithOrderSheet(emails, filePath, fileName);
+
+    for (const email of emails) {
+      if (email.includes("@")) {
+        await sendEmailWithReport(email, filePath, fileName, caseId);
+      }
+    }
+    res.status(200).json({
+      success: true,
+      message: "MS Word report sent on email successfully",
+    });
     fs.unlinkSync(filePath);
   } catch (error) {
     fs.unlinkSync(filePath);
