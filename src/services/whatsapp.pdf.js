@@ -1,17 +1,118 @@
+const CaseModel = require("../models/caseModel");
+const PropertyDetailsModel = require("../models/propertyDetailsByFieldExecutiveModel");
+const dotenv = require("dotenv");
+dotenv.config();
+const axios = require("axios");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
-require("dotenv").config();
-const axios = require("axios");
-const CaseModel = require("../../models/caseModel");
-const PropertyDetailsModel = require("../../models/propertyDetailsByFieldExecutiveModel");
-
+const FormData = require("form-data");
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
-const logoPath = path.join(__dirname, "../../utils/REV_logo.png");
+const logoPath = path.join(__dirname, "../utils/REV_logo.png");
 
-const getFinalReportInPDF = async (req, res) => {
+const messageType = process.env.messageType;
+const fromNumber = process.env.fromNumber;
+const templateid = process.env.templateid;
+const serviceType = process.env.serviceType;
+const messageuuid = process.env.messageuuid;
+const api_key = process.env.WHATSAPP_API_KEY;
+
+class WhatsAppQueue {
+  constructor() {
+    this.queue = [];
+    this.isProcessing = false;
+  }
+
+  async addToQueue(task) {
+    this.queue.push(task);
+    if (!this.isProcessing) {
+      await this.processQueue();
+    }
+  }
+
+  async processQueue() {
+    this.isProcessing = true;
+    while (this.queue.length > 0) {
+      const task = this.queue.shift();
+      await task();
+    }
+    this.isProcessing = false;
+  }
+}
+
+const whatsappQueue = new WhatsAppQueue();
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function sendWhatsAppInPDF(number, filepath, filename) {
+  const maxRetries = 4;
+  let attempts = 0;
+  await whatsappQueue.addToQueue(async () => {
+    while (attempts < maxRetries) {
+      try {
+        console.log(
+          `Reading PDF from: ${filepath} (Attempt ${
+            attempts + 1
+          } of ${maxRetries})`
+        );
+
+        // Ensure file exists before reading
+        if (!fs.existsSync(filepath)) {
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("messageType", messageType);
+        formData.append("fromNumber", fromNumber);
+        formData.append("contactnumber", number);
+        formData.append("templateid", templateid);
+        formData.append("serviceType", serviceType);
+        formData.append("messageuuid", `${Date.now()}${messageuuid}`);
+        formData.append("buttonValues", "");
+        formData.append("dynamicUrl", "");
+        formData.append("dynamicUrl2", "");
+
+        // ✅ Use `fs.createReadStream(filepath)` instead of `fs.readFileSync()`
+        formData.append("file", fs.createReadStream(filepath), {
+          filename: "document.pdf",
+        });
+
+        const url = "https://automate.nexgplatforms.com/api/v1/wa/save-message";
+        const response = await axios.post(url, formData, {
+          headers: {
+            ...formData.getHeaders(),
+            authorization: api_key,
+          },
+        });
+        await delay(100);
+        return response.data;
+      } catch (error) {
+        attempts++;
+        console.error(
+          `Failed to send WhatsApp message to ${number}. Attempt ${attempts} of ${maxRetries}. Error:`,
+          error.message
+        );
+
+        if (attempts === maxRetries) {
+          console.error(`Giving up after ${maxRetries} attempts.`);
+        } else {
+          await delay(1000); // Wait 1s before retrying
+        }
+      }
+    }
+  });
+}
+
+const sendwhatsappFinalReportInPDF = async (req, res) => {
   try {
     const { caseId } = req.params;
+    const { number } = req.body; // Array of emails
+
+    if (!number || !Array.isArray(number) || number.length === 0) {
+      return res.status(400).json({ message: "Invalid number array" });
+    }
 
     const caseData = await CaseModel.findById(caseId).populate([
       { path: "bankId", select: "bankName branchName IFSC" },
@@ -190,7 +291,7 @@ const getFinalReportInPDF = async (req, res) => {
 
     // Logo
     const leftMargin2 = 230;
-    const topMargin2 = 0; 
+    const topMargin2 = 0;
 
     doc.image(logoPath, leftMargin2, doc.y + topMargin2, {
       fit: [200, 75],
@@ -216,11 +317,13 @@ const getFinalReportInPDF = async (req, res) => {
     doc
       .font("Helvetica-Bold")
       .fontSize(8)
-      .text(`Report No: ${caseData?.BOV_ReportNo}`, leftMargin, doc.y).moveDown();;
+      .text(`Report No: ${caseData?.BOV_ReportNo}`, leftMargin, doc.y)
+      .moveDown();
     doc
       .font("Helvetica-Bold")
       .fontSize(8)
-      .text(`Ref No: ${caseData?.bankRefNo}`, leftMargin, doc.y).moveDown();;
+      .text(`Ref No: ${caseData?.bankRefNo}`, leftMargin, doc.y)
+      .moveDown();
     doc
       .font("Helvetica-Bold")
       .fontSize(8)
@@ -573,12 +676,12 @@ const getFinalReportInPDF = async (req, res) => {
       doc.addPage();
       imageY = 80;
     }
-    doc.moveDown();
+    doc.moveDown(10);
 
     doc
       .fontSize(12)
       .font("Helvetica-Bold")
-      .text("19. Location map", startX, imageY+60)
+      .text("19. Location map", startX, imageY + 60)
       .moveDown(2);
 
     doc.image(locationImage, startX, imageY + 80, {
@@ -586,15 +689,30 @@ const getFinalReportInPDF = async (req, res) => {
     });
 
     doc.end();
-    writeStream.on("finish", () => {
-      res.download(filePath, fileName, (err) => {
-        if (err) console.error("Error downloading file:", err);
-        fs.unlinkSync(filePath);
-      });
+    writeStream.on("finish", async () => {
+      // Check if file exists before sending
+      if (!fs.existsSync(filePath)) {
+        console.error(`Error: File missing at ${filePath}`);
+        return;
+      }
+
+      try {
+        for (const num of number) {
+          await sendWhatsAppInPDF(num, filePath, fileName);
+        }
+        fs.unlink(filePath, (err) => {
+          if (err) console.error("Failed to delete file:", err);
+        });
+
+        res.status(200).json({ message: "PDF sent on WhatsApp successfully" });
+      } catch (error) {
+        console.error("Failed to send WhatsApp message:", error);
+        res.status(500).json({ error: "Failed to send WhatsApp message" });
+      }
     });
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
 };
 
-module.exports = { getFinalReportInPDF };
+module.exports = { sendwhatsappFinalReportInPDF };

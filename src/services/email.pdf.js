@@ -1,17 +1,100 @@
+const dotenv = require("dotenv");
+dotenv.config()
+const nodemailer = require("nodemailer");
+const axios = require("axios");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
-require("dotenv").config();
-const axios = require("axios");
-const CaseModel = require("../../models/caseModel");
-const PropertyDetailsModel = require("../../models/propertyDetailsByFieldExecutiveModel");
+const CaseModel = require("../models/caseModel");
+const PropertyDetailsModel = require("../models/propertyDetailsByFieldExecutiveModel");
 
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
-const logoPath = path.join(__dirname, "../../utils/REV_logo.png");
+const logoPath = path.join(__dirname, "../utils/REV_logo.png");
+class EmailQueue {
+  constructor() {
+    this.queue = [];
+    this.isProcessing = false;
+  }
 
-const getFinalReportInPDF = async (req, res) => {
+  async addToQueue(task) {
+    this.queue.push(task);
+    if (!this.isProcessing) {
+      await this.processQueue();
+    }
+  }
+
+  async processQueue() {
+    this.isProcessing = true;
+    while (this.queue.length > 0) {
+      const task = this.queue.shift();
+      await task();
+    }
+    this.isProcessing = false;
+  }
+}
+
+const emailQueue = new EmailQueue();
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function sendEmailWithOrderSheet(email, filepath, fileName) {
+  const maxRetries = 4;
+  let attempts = 0;
+
+  const outlookEmail = process.env.OUTLOOK_EMAIL;
+  const outlookPassword = process.env.OUTLOOK_PASSWORD;
+  const fromEmail = process.env.FROMEMAIL;
+  const subject = `Final Report`;
+  const body = `Please find the attached PDF report.`;
+
+  await emailQueue.addToQueue(async () => {
+    while (attempts < maxRetries) {
+      try {
+        const transporter = nodemailer.createTransport({
+          host: "smtp.office365.com",
+          port: 587,
+          secure: false,
+          auth: {
+            user: outlookEmail,
+            pass: outlookPassword,
+          },
+        });
+
+        const mailOptions = {
+          from: fromEmail,
+          to: email,
+          subject: subject,
+          text: body,
+          attachments: [
+            {
+              filename: fileName, 
+              path: filepath, 
+            },
+          ],
+        };
+
+        await transporter.sendMail(mailOptions);
+        await delay(500);
+        break;
+      } catch (error) {
+        attempts++;
+        if (attempts === maxRetries) {
+          throw new Error("Failed to send email");
+        }
+      }
+    }
+  });
+}
+
+const sendFinalReportInPDF = async (req, res) => {
   try {
     const { caseId } = req.params;
+    const { email } = req.body; // Array of emails
+
+    if (!email || !Array.isArray(email) || email.length === 0) {
+      return res.status(400).json({ message: "Invalid email array" });
+    }
 
     const caseData = await CaseModel.findById(caseId).populate([
       { path: "bankId", select: "bankName branchName IFSC" },
@@ -190,7 +273,7 @@ const getFinalReportInPDF = async (req, res) => {
 
     // Logo
     const leftMargin2 = 230;
-    const topMargin2 = 0; 
+    const topMargin2 = 0;
 
     doc.image(logoPath, leftMargin2, doc.y + topMargin2, {
       fit: [200, 75],
@@ -216,11 +299,13 @@ const getFinalReportInPDF = async (req, res) => {
     doc
       .font("Helvetica-Bold")
       .fontSize(8)
-      .text(`Report No: ${caseData?.BOV_ReportNo}`, leftMargin, doc.y).moveDown();;
+      .text(`Report No: ${caseData?.BOV_ReportNo}`, leftMargin, doc.y)
+      .moveDown();
     doc
       .font("Helvetica-Bold")
       .fontSize(8)
-      .text(`Ref No: ${caseData?.bankRefNo}`, leftMargin, doc.y).moveDown();;
+      .text(`Ref No: ${caseData?.bankRefNo}`, leftMargin, doc.y)
+      .moveDown();
     doc
       .font("Helvetica-Bold")
       .fontSize(8)
@@ -573,28 +658,32 @@ const getFinalReportInPDF = async (req, res) => {
       doc.addPage();
       imageY = 80;
     }
-    doc.moveDown();
+    doc.moveDown(10);
 
     doc
-      .fontSize(12)
-      .font("Helvetica-Bold")
-      .text("19. Location map", startX, imageY+60)
-      .moveDown(2);
+    .fontSize(12)
+    .font("Helvetica-Bold")
+    .text("19. Location map", startX, imageY+60)
+    .moveDown(2);
 
-    doc.image(locationImage, startX, imageY + 80, {
-      width: doc.page.width - 2 * startX,
-    });
+  doc.image(locationImage, startX, imageY + 80, {
+    width: doc.page.width - 2 * startX,
+  });
 
     doc.end();
-    writeStream.on("finish", () => {
-      res.download(filePath, fileName, (err) => {
-        if (err) console.error("Error downloading file:", err);
-        fs.unlinkSync(filePath);
-      });
+    writeStream.on("finish", async () => {
+      await sendEmailWithOrderSheet(email, filePath, fileName);
+      res.status(200).json({ message: "PDF sent on email successfully" });
+      fs.unlinkSync(filePath);
     });
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
 };
 
-module.exports = { getFinalReportInPDF };
+
+
+
+
+module.exports = {sendFinalReportInPDF};
+
