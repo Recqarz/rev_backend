@@ -108,9 +108,9 @@ async function sendWhatsAppInPDF(number, filepath, filename) {
 const sendwhatsappFinalReportInPDF = async (req, res) => {
   try {
     const { caseId } = req.params;
-    const { number } = req.body; // Array of emails
+    const { whatsAppNumbers } = req.body; // Array of emails
 
-    if (!number || !Array.isArray(number) || number.length === 0) {
+    if (!whatsAppNumbers || !Array.isArray(whatsAppNumbers) || whatsAppNumbers.length === 0) {
       return res.status(400).json({ message: "Invalid number array" });
     }
 
@@ -697,7 +697,7 @@ const sendwhatsappFinalReportInPDF = async (req, res) => {
       }
 
       try {
-        for (const num of number) {
+        for (const num of whatsAppNumbers) {
           await sendWhatsAppInPDF(num, filePath, fileName);
         }
         fs.unlink(filePath, (err) => {
