@@ -1,3 +1,6 @@
+const dotenv = require("dotenv");
+dotenv.config();
+const nodemailer = require("nodemailer");
 const {
   Document,
   Packer,
@@ -14,15 +17,110 @@ const {
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-const PropertyDetailsModel = require("../../models/propertyDetailsByFieldExecutiveModel");
-const CaseModel = require("../../models/caseModel");
-require("dotenv").config();
-
-
-const imagePath = path.join(__dirname, "../../utils/REV_logo.png");
+const CaseModel = require("../models/caseModel");
+const PropertyDetailsModel = require("../models/propertyDetailsByFieldExecutiveModel");
+const imagePath = path.join(__dirname, "../utils/REV_logo.png");
 const imageBuffer = fs.readFileSync(imagePath);
 
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+
+class EmailQueue {
+  constructor() {
+    this.queue = [];
+    this.isProcessing = false;
+  }
+
+  async addToQueue(task) {
+    this.queue.push(task);
+    if (!this.isProcessing) {
+      await this.processQueue();
+    }
+  }
+
+  async processQueue() {
+    this.isProcessing = true;
+    while (this.queue.length > 0) {
+      const task = this.queue.shift();
+      await task();
+    }
+    this.isProcessing = false;
+  }
+}
+
+const emailQueue = new EmailQueue();
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function sendEmailWithReport(email, filepath, fileName, caseId) {
+  const maxRetries = 4;
+  let attempts = 0;
+
+  const outlookEmail = process.env.OUTLOOK_EMAIL;
+  const outlookPassword = process.env.OUTLOOK_PASSWORD;
+  const fromEmail = process.env.FROMEMAIL;
+  const subject = `Final Report`;
+  const body = `Please find the final report in MS Word format attached.
+
+Best Regards,
+REV_RECQARZ`;
+
+  await emailQueue.addToQueue(async () => {
+    while (attempts < maxRetries) {
+      try {
+        const transporter = nodemailer.createTransport({
+          host: "smtp.office365.com",
+          port: 587,
+          secure: false,
+          auth: {
+            user: outlookEmail,
+            pass: outlookPassword,
+          },
+        });
+
+        const mailOptions = {
+          from: fromEmail,
+          to: email,
+          subject: subject,
+          text: body,
+          attachments: [
+            {
+              filename: fileName,
+              path: filepath,
+            },
+          ],
+        };
+
+        const updatedCase = await CaseModel.findByIdAndUpdate(
+          caseId,
+          {
+            "reportDelivery.emailStatus.msWord.status": true,
+            $push: {
+              "reportDelivery.emailStatus.msWord.emailUserLists": {
+                $each: Array.isArray(email) ? email : [email],
+              },
+            },
+          },
+          { new: true }
+        );
+        if (!updatedCase) {
+          return res
+            .status(404)
+            .send({ error: "Case not found or not updated" });
+        }
+
+        await transporter.sendMail(mailOptions);
+        await delay(500);
+        break;
+      } catch (error) {
+        attempts++;
+        if (attempts === maxRetries) {
+          throw new Error("Failed to send email");
+        }
+      }
+    }
+  });
+}
 
 const getImageBuffer = async (url) => {
   try {
@@ -34,9 +132,15 @@ const getImageBuffer = async (url) => {
   }
 };
 
-const generateFinalReport = async (req, res) => {
+const sendEmailFinalReportWord = async (req, res) => {
   try {
     const { caseId } = req.params;
+    const { emails } = req.body;
+
+    if (!emails || !Array.isArray(emails) || emails.length === 0) {
+      return res.status(400).json({ message: "Invalid email array" });
+    }
+
     const caseData = await CaseModel.findById(caseId).populate([
       { path: "bankId", select: "bankName branchName IFSC" },
       { path: "zone", select: "name" },
@@ -228,7 +332,7 @@ const generateFinalReport = async (req, res) => {
             margins: { top: 50, bottom: 50, left: 50, right: 50 },
           })
         : new TableCell({ children: [] });
-    
+
       let secondImage = imageBuffers[i + 1]
         ? new TableCell({
             children: [
@@ -249,20 +353,19 @@ const generateFinalReport = async (req, res) => {
             margins: { top: 50, bottom: 50, left: 50, right: 50 },
           })
         : new TableCell({ children: [] });
-    
+
       imageRows.push(
         new TableRow({
           children: [firstImage, secondImage],
         })
       );
     }
-    
+
     // Create the table
     const imageTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       rows: imageRows,
     });
-    
 
     const commonTableProperties = {
       width: { size: 100, type: WidthType.PERCENTAGE },
@@ -575,7 +678,6 @@ const generateFinalReport = async (req, res) => {
         createTableRow("Mobile Number", auditorMobile.toString()),
       ],
     });
-
     // **Generating the document**
     const doc = new Document({
       sections: [
@@ -594,19 +696,33 @@ const generateFinalReport = async (req, res) => {
 
             new Paragraph({
               children: [
-                new TextRun({ text:`TECHNICAL APPRAISAL REPORT FOR ${bankName.toUpperCase()}`, bold: true, size: 32 }),
+                new TextRun({
+                  text: `TECHNICAL APPRAISAL REPORT FOR ${bankName.toUpperCase()}`,
+                  bold: true,
+                  size: 32,
+                }),
               ],
               alignment: AlignmentType.CENTER,
               spacing: { after: 200 },
             }),
-           
+
             new Paragraph({
-              children: [new TextRun({ text: `Ref No: ${caseData?.bankRefNo}`, bold: true })],
+              children: [
+                new TextRun({
+                  text: `Ref No: ${caseData?.bankRefNo}`,
+                  bold: true,
+                }),
+              ],
               spacing: { before: 1000, after: 150 }, // Adds margin below the paragraph
               alignment: AlignmentType.LEFT, // Aligns text to the left
             }),
             new Paragraph({
-              children: [new TextRun({ text: `Report No: ${caseData?.BOV_ReportNo}`, bold: true })],
+              children: [
+                new TextRun({
+                  text: `Report No: ${caseData?.BOV_ReportNo}`,
+                  bold: true,
+                }),
+              ],
               spacing: { after: 150 },
               alignment: AlignmentType.LEFT,
             }),
@@ -635,31 +751,31 @@ const generateFinalReport = async (req, res) => {
                   size: 24,
                 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             propertyTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({ text: "3. Bank details", bold: true, size: 24 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             bankTable,
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({ text: "4. Road property", bold: true, size: 24 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             roadPropertyTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({
@@ -668,22 +784,22 @@ const generateFinalReport = async (req, res) => {
                   size: 24,
                 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             structureBuidingTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({ text: "6. Dwelling unit", bold: true, size: 24 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             dwellingUnitsTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({
@@ -692,12 +808,12 @@ const generateFinalReport = async (req, res) => {
                   size: 24,
                 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             groundFloorDetailsTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({
@@ -706,7 +822,7 @@ const generateFinalReport = async (req, res) => {
                   size: 24,
                 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             rentDetailsTable,
@@ -716,12 +832,12 @@ const generateFinalReport = async (req, res) => {
               children: [
                 new TextRun({ text: "9. Plot area", bold: true, size: 24 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             plotAreaTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({
@@ -730,12 +846,12 @@ const generateFinalReport = async (req, res) => {
                   size: 24,
                 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             remarksTable,
 
-            new Paragraph({ number: "" }), // Spacer
+            new Paragraph({ number: "" }),
             new Paragraph({
               children: [
                 new TextRun({
@@ -744,12 +860,12 @@ const generateFinalReport = async (req, res) => {
                   size: 24,
                 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             valueTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({
@@ -758,22 +874,22 @@ const generateFinalReport = async (req, res) => {
                   size: 24,
                 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             floorTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({ text: "13. Others", bold: true, size: 24 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             otherDataTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({
@@ -782,12 +898,12 @@ const generateFinalReport = async (req, res) => {
                   size: 24,
                 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             coordinatorDetailsTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({
@@ -796,12 +912,12 @@ const generateFinalReport = async (req, res) => {
                   size: 24,
                 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             feDetailsTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({
@@ -810,12 +926,12 @@ const generateFinalReport = async (req, res) => {
                   size: 24,
                 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             supervisorTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({
@@ -824,7 +940,7 @@ const generateFinalReport = async (req, res) => {
                   size: 24,
                 }),
               ],
-              spacing: { before: 100, after: 100 }, // Add space before and after
+              spacing: { before: 100, after: 100 },
               alignment: AlignmentType.LEFT,
             }),
             auditorTable,
@@ -837,12 +953,12 @@ const generateFinalReport = async (req, res) => {
                   size: 24,
                 }),
               ],
-              spacing: { before: 100, after: 100, top: 200 }, // Add space before and after
+              spacing: { before: 100, after: 100, top: 200 },
               alignment: AlignmentType.LEFT,
             }),
             imageTable,
 
-            new Paragraph({ text: "" }), // Spacer
+            new Paragraph({ text: "" }),
             new Paragraph({
               children: [
                 new TextRun({
@@ -877,24 +993,34 @@ const generateFinalReport = async (req, res) => {
       ],
     });
 
+    const fileName = `Final_Report_${caseId}.docx`;
+    const filePath = path.join(__dirname, "../reports", fileName);
     // Convert document to buffer
-    const buffer = await Packer.toBuffer(doc);
-    // Set headers for download
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    );
-    res.setHeader(
-      "Content-Disposition",
-      'attachment; filename="technical_report.docx"'
-    );
 
-    // Send the generated file
-    res.send(buffer);
+    const buffer = await Packer.toBuffer(doc);
+    if (!fs.existsSync(path.join(__dirname, "../reports"))) {
+      fs.mkdirSync(path.join(__dirname, "../reports"));
+    }
+
+    fs.writeFileSync(filePath, buffer);
+    // await sendEmailWithOrderSheet(emails, filePath, fileName);
+
+    for (const email of emails) {
+      if (email.includes("@")) {
+        await sendEmailWithReport(email, filePath, fileName, caseId);
+      }
+    }
+    res.status(200).json({
+      success: true,
+      message: "MS Word report sent on email successfully",
+    });
+    fs.unlinkSync(filePath);
   } catch (error) {
+    fs.unlinkSync(filePath);
     console.error("Error generating report:", error);
-    res.status(500).send("Failed to generate report");
+    res
+      .status(500)
+      .send({ success: false, message: "Failed to generate report" });
   }
 };
-
-module.exports = { generateFinalReport };
+module.exports = { sendEmailFinalReportWord };

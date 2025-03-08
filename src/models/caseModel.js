@@ -49,6 +49,32 @@ const dailyQuerySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
+const reportDeliverySchema = new mongoose.Schema({
+  whatsAppStatus: {
+    pdf: {
+      status: { type: Boolean, default: false },
+      wpUserLists: { type: [String], default: [] },
+    },
+  },
+  emailStatus: {
+    pdf: {
+      status: { type: Boolean, default: false },
+      emailUserLists: { type: [String], default: [] },
+    },
+    msWord: {
+      status: { type: Boolean, default: false },
+      emailUserLists: { type: [String], default: [] },
+    },
+  },
+});
+
+
+
+
+
+
+
 const caseSchema = new mongoose.Schema(
   {
     caseCode: {
@@ -165,6 +191,7 @@ const caseSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    reportDelivery: { type: reportDeliverySchema, default: () => ({}) },
   },
   { timestamps: true }
 );
